@@ -23,10 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
-# Local environment (Firebase keys)
+# Local environment (Supabase keys, including the secret service-role key)
 .env
 .env.local
 
-# Firebase Admin SDK key (secret)
+
+# Leftover Firebase key, never commit
 serviceAccountKey.json
-*-firebase-adminsdk-*.json
