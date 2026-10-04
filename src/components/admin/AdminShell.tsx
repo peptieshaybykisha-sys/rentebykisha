@@ -50,7 +50,7 @@ export function AdminLayout() {
             <button
               type="button"
               onClick={() => void logout()}
-              className="flex min-h-11 items-center gap-1.5 rounded-full px-3 text-burgundy hover:bg-blush-soft"
+              className="flex min-h-11 items-center gap-1.5 -mr-3 rounded-full px-3 text-burgundy hover:bg-blush-soft"
               title={email ?? undefined}
             >
               Sign out <LogOut className="size-4" aria-hidden />
@@ -64,7 +64,7 @@ export function AdminLayout() {
               to={n.to}
               end={n.end}
               className={({ isActive }) =>
-                cn('whitespace-nowrap border-b-2 px-4 py-3 font-medium transition-colors', isActive ? 'border-burgundy text-burgundy' : 'border-transparent text-muted hover:text-burgundy')
+                cn('whitespace-nowrap border-b-2 px-4 py-3 first:-ml-4 font-medium transition-colors', isActive ? 'border-burgundy text-burgundy' : 'border-transparent text-muted hover:text-burgundy')
               }
             >
               {n.label}
