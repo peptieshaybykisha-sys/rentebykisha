@@ -46,6 +46,8 @@ try {
   user = await auth.updateUser(user.uid, { password, emailVerified: true, disabled: false })
   console.log(`• Updated existing user ${email}`)
 } catch (e) {
+  if (e.code === 'auth/configuration-not-found')
+    fail('Firebase Authentication is not enabled yet. In the console open Build > Authentication, click Get started, then enable the Email/Password sign-in method and run this again.')
   if (e.code !== 'auth/user-not-found') fail(`Could not look up the user: ${e.message}`)
   user = await auth.createUser({ email, password, emailVerified: true, displayName: 'Renté Admin' })
   console.log(`• Created user ${email}`)
