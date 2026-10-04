@@ -1,24 +1,79 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    // An admin is a signed-in user whose UID has a document in /admins (created by `npm run seed:admin`).
     function isAdmin() {
-      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // Public catalogue and editable site content
-    match /dresses/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /settings/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
+    function isShortText(v, max) {
+      return v is string && v.size() > 0 && v.size() <= max;
     }
 
-    // Admin allow-list: a user can only check their own entry. Create entries in the Firebase console.
+    function validDress(d) {
+      return isShortText(d.name, 120)
+        && d.category in ['Evening', 'Formal', 'Cocktail', 'Bridal', 'Prom', 'Events']
+        && d.price is number && d.price >= 0
+        && d.deposit is number && d.deposit >= 0
+        && d.description is string && d.description.size() <= 4000
+        && d.sizes is list && d.sizes.size() > 0 && d.sizes.size() <= 20
+        && d.details is list && d.details.size() <= 30
+        && d.images is list && d.images.size() <= 12
+        && d.bookedRanges is list && d.bookedRanges.size() <= 100
+        && d.status in ['available', 'unavailable']
+        && d.featured is bool;
+    }
+
+    function validSizeGuide(d) {
+      return d.note is string && d.note.size() <= 1000
+        && d.columns is list && d.columns.size() >= 2 && d.columns.size() <= 10
+        && d.rows is list && d.rows.size() <= 40;
+    }
+
+    function validHowItWorks(d) {
+      return d.steps is list && d.steps.size() >= 1 && d.steps.size() <= 5
+        && d.faq is list && d.faq.size() <= 30;
+    }
+
+    function validHero(d) {
+      return d.dressIds is list && d.dressIds.size() <= 5;
+    }
+
+    // ---------- public catalogue ----------
+    // Anyone can read dresses; only admins can change them.
+    match /dresses/{dressId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validDress(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // ---------- editable site content ----------
+    match /settings/sizeGuide {
+      allow read: if true;
+      allow create, update: if isAdmin() && validSizeGuide(request.resource.data);
+      allow delete: if isAdmin();
+    }
+    match /settings/howItWorks {
+      allow read: if true;
+      allow create, update: if isAdmin() && validHowItWorks(request.resource.data);
+      allow delete: if isAdmin();
+    }
+    match /settings/hero {
+      allow read: if true;
+      allow create, update: if isAdmin() && validHero(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // ---------- admin allow-list ----------
+    // A user may only check their own entry. Entries are created with the Admin SDK (the seeder), never from the client.
     match /admins/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false;
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, write: if false;
     }
+
+    // Everything else is denied by default.
   }
 }
