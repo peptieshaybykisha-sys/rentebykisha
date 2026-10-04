@@ -1,36 +1,37 @@
 import Dialog from '@/components/ui/Dialog'
-
-const ROWS = [
-  ['XS', '80–84', '60–64', '86–90', '4'],
-  ['S', '85–89', '65–69', '91–95', '6'],
-  ['M', '90–94', '70–74', '96–100', '8'],
-  ['L', '95–99', '75–79', '101–105', '10'],
-  ['XL', '100–106', '80–86', '106–112', '12'],
-]
+import { useSizeGuide } from '@/hooks/useSettings'
 
 export default function SizeGuide({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { note, columns, rows } = useSizeGuide()
   return (
     <Dialog open={open} onClose={onClose} title="Size guide">
-      <p className="mb-4 text-muted">Measurements are body measurements in centimetres. If you are between sizes, choose the larger one or book a fitting.</p>
+      {note && <p className="mb-4 text-muted">{note}</p>}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[22rem] text-left">
-          <caption className="sr-only">Body measurements by size</caption>
+        <table className="w-full min-w-[20rem] text-left">
+          <caption className="sr-only">Measurements by size</caption>
           <thead>
             <tr className="border-b border-line text-sm text-muted">
-              <th scope="col" className="py-2 font-medium">Size</th>
-              <th scope="col" className="py-2 font-medium">Bust</th>
-              <th scope="col" className="py-2 font-medium">Waist</th>
-              <th scope="col" className="py-2 font-medium">Hips</th>
-              <th scope="col" className="py-2 font-medium">US</th>
+              {columns.map((c, i) => (
+                <th key={i} scope="col" className="py-2 font-medium">
+                  {c}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {ROWS.map(([s, ...rest]) => (
-              <tr key={s} className="border-b border-line/70">
-                <th scope="row" className="py-3 font-serif text-xl text-burgundy">{s}</th>
-                {rest.map((c, i) => (
-                  <td key={i} className="py-3">{c}</td>
-                ))}
+            {rows.map((r, ri) => (
+              <tr key={ri} className="border-b border-line/70">
+                {columns.map((_, ci) =>
+                  ci === 0 ? (
+                    <th key={ci} scope="row" className="py-3 font-serif text-xl text-burgundy">
+                      {r[ci]}
+                    </th>
+                  ) : (
+                    <td key={ci} className="py-3">
+                      {r[ci]}
+                    </td>
+                  ),
+                )}
               </tr>
             ))}
           </tbody>
