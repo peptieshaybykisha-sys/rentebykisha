@@ -5,7 +5,8 @@ import { EmptyState } from '@/components/common/States'
 import CategoryTabs, { type CategoryFilter } from '@/components/dresses/CategoryTabs'
 import DressGrid from '@/components/dresses/DressGrid'
 import { CATEGORIES } from '@/constants/catalog'
-import { useDressList, useDresses } from '@/hooks/useDresses'
+import { DressGridSkeleton } from '@/components/ui/Skeleton'
+import { useCatalogStatus, useDressList, useDresses } from '@/hooks/useDresses'
 
 export default function Dresses() {
   const [params, setParams] = useSearchParams()
@@ -27,6 +28,7 @@ export default function Dresses() {
       { replace: true },
     )
 
+  const loading = useCatalogStatus() === 'loading'
   const base = useDresses({ category, query: q, availableOnly })
   const list = size ? base.filter((d) => d.sizes.includes(size)) : base
 
@@ -78,10 +80,12 @@ export default function Dresses() {
       </div>
 
       <p className="mt-8 text-center text-sm text-muted" aria-live="polite">
-        {list.length} {list.length === 1 ? 'dress' : 'dresses'}
+        {loading ? 'Loading dresses…' : `${list.length} ${list.length === 1 ? 'dress' : 'dresses'}`}
       </p>
       <div className="mt-6">
-        {list.length ? (
+        {loading ? (
+          <DressGridSkeleton />
+        ) : list.length ? (
           <DressGrid dresses={list} />
         ) : (
           <EmptyState title="No dresses match that" to="/dresses" cta="Clear filters">

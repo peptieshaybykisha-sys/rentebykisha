@@ -5,6 +5,7 @@ import Container from '@/components/common/Container'
 import { ErrorState } from '@/components/common/States'
 import { RentalSummary } from '@/components/rentals/RentalParts'
 import { ButtonLink } from '@/components/ui/Button'
+import { PageLoader } from '@/components/ui/Skeleton'
 import StatusBadge from '@/components/ui/StatusBadge'
 import { useAccount } from '@/stores/account'
 
@@ -13,7 +14,7 @@ export default function Confirmation() {
   const loaded = useAccount((s) => s.loaded)
   const rental = useAccount((s) => s.rentals.find((r) => r.id === id))
 
-  if (!loaded) return <p className="py-24 text-center text-muted" aria-busy="true">Loading…</p>
+  if (!loaded) return <PageLoader label="Loading your rental…" />
   if (!rental)
     return (
       <ErrorState title="We could not find that request" to="/rentals" cta="View my rentals">

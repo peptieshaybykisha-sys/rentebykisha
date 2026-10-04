@@ -12,13 +12,15 @@ import DressGrid from '@/components/dresses/DressGrid'
 import { ButtonLink } from '@/components/ui/Button'
 import { CATEGORIES, OCCASION_BLURBS } from '@/constants/catalog'
 import { useDressList } from '@/hooks/useDresses'
-import { useDresses } from '@/hooks/useDresses'
+import { DressGridSkeleton, FeaturedRowSkeleton } from '@/components/ui/Skeleton'
+import { useCatalogStatus, useDresses } from '@/hooks/useDresses'
 import { cn } from '@/lib/utils'
 import type { Category } from '@/types'
 
 export function CollectionSection() {
   const [cat, setCat] = useState<CategoryFilter>('All')
   const list = useDresses({ category: cat })
+  const loading = useCatalogStatus() === 'loading'
   return (
     <Container as="section" id="collection" aria-labelledby="collection-title" className="scroll-mt-20 pb-6 pt-16 sm:pt-24">
       <div className="text-center">
@@ -29,7 +31,13 @@ export function CollectionSection() {
       </div>
       <CategoryTabs value={cat} onChange={setCat} className="mt-8 sm:mt-10" />
       <div className="mt-10" aria-live="polite">
-        {list.length ? <DressGrid dresses={list.slice(0, 8)} /> : <EmptyState title="Nothing here yet" to="/dresses" cta="See every dress" />}
+        {loading ? (
+          <DressGridSkeleton />
+        ) : list.length ? (
+          <DressGrid dresses={list.slice(0, 8)} />
+        ) : (
+          <EmptyState title="Nothing here yet" to="/dresses" cta="See every dress" />
+        )}
       </div>
       <div className="mt-12 text-center">
         <ButtonLink to={cat === 'All' ? '/dresses' : `/dresses?category=${cat}`} variant="secondary" size="lg">
@@ -67,7 +75,7 @@ export function OccasionSection() {
                       <span className="text-[0.95rem] text-muted">{OCCASION_BLURBS[c]}</span>
                     </span>
                     <span className="flex shrink-0 items-center gap-2 text-sm text-muted">
-                      {count} {count === 1 ? 'gown' : 'gowns'}
+                      {count === 0 ? 'Coming soon' : `${count} ${count === 1 ? 'gown' : 'gowns'}`}
                       <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
                     </span>
                   </Link>
@@ -84,6 +92,11 @@ export function OccasionSection() {
                 <DressPhoto dress={sample} className="size-full object-cover" />
               </motion.div>}
             </AnimatePresence>
+            {!sample && (
+              <div className="flex size-full items-center justify-center">
+                <span className="font-serif text-3xl text-burgundy/50">Coming soon</span>
+              </div>
+            )}
           </div>
         </div>
       </Container>
@@ -94,6 +107,8 @@ export function OccasionSection() {
 export function FeaturedSection() {
   const dresses = useDressList()
   const featured = dresses.filter((d) => d.featured)
+  const loading = useCatalogStatus() === 'loading'
+  if (!loading && featured.length === 0) return null
   return (
     <section aria-labelledby="featured-title" className="pt-24">
       <Container>
@@ -109,13 +124,17 @@ export function FeaturedSection() {
           </Link>
         </div>
       </Container>
-      <ul className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 sm:px-8 lg:px-[max(3rem,calc((100vw-80rem)/2+3rem))]">
-        {featured.map((d) => (
-          <li key={d.id} className="w-[72vw] max-w-[21rem] shrink-0 snap-start sm:w-[21rem]">
-            <DressCard dress={d} />
-          </li>
-        ))}
-      </ul>
+      {loading ? (
+        <FeaturedRowSkeleton />
+      ) : (
+        <ul className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 sm:px-8 lg:px-[max(3rem,calc((100vw-80rem)/2+3rem))]">
+          {featured.map((d) => (
+            <li key={d.id} className="w-[72vw] max-w-[21rem] shrink-0 snap-start sm:w-[21rem]">
+              <DressCard dress={d} />
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   )
 }
@@ -139,8 +158,14 @@ export function FittingCta() {
               Schedule My Fitting
             </ButtonLink>
           </div>
-          <div className="relative hidden h-full min-h-[20rem] bg-blush-soft md:block" aria-hidden>
-            {dress && <DressPhoto dress={dress} className="absolute inset-0 size-full object-cover" />}
+          <div className="relative hidden h-full min-h-[20rem] bg-blush-soft md:block">
+            {dress ? (
+              <DressPhoto dress={dress} className="absolute inset-0 size-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 grid place-items-center">
+                <span className="font-serif text-3xl text-burgundy/50">Coming soon</span>
+              </div>
+            )}
           </div>
         </div>
       </Container>

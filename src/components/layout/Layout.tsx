@@ -5,6 +5,7 @@ import Header from './Header'
 import Footer from './Footer'
 import BottomNav from './BottomNav'
 import Toaster from './Toaster'
+import { PageLoader } from '@/components/ui/Skeleton'
 import { useAuthStore } from '@/stores'
 
 function ScrollToTop() {
@@ -44,7 +45,7 @@ export default function Layout() {
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className={isHome ? 'flex-1' : 'flex-1 pt-[var(--header-h)]'}
         >
-          <Suspense fallback={<div className="min-h-[60svh]" aria-busy />}>
+          <Suspense fallback={<PageLoader />}>
             {outlet}
           </Suspense>
         </motion.main>

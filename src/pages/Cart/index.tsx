@@ -5,7 +5,8 @@ import OrderSummary from '@/components/cart/OrderSummary'
 import Container, { PageTitle } from '@/components/common/Container'
 import { EmptyState, Notice } from '@/components/common/States'
 import { ButtonLink } from '@/components/ui/Button'
-import { useDressLookup } from '@/hooks/useDresses'
+import { ListSkeleton } from '@/components/ui/Skeleton'
+import { useCatalogStatus, useDressLookup } from '@/hooks/useDresses'
 import { checkAvailability } from '@/lib/availability'
 import { DELIVERY_FEE } from '@/constants/business'
 import { computeTotals } from '@/lib/pricing'
@@ -15,12 +16,21 @@ import { useCartStore } from '@/stores'
 export default function Cart() {
   const items = useCartStore((s) => s.items)
   const getDress = useDressLookup()
+  const catalogLoading = useCatalogStatus() === 'loading'
   const entries = items.flatMap((item) => {
     const dress = getDress(item.dressId)
     return dress ? [{ item, dress }] : []
   })
   const blocked = entries.some(({ item, dress }) => checkAvailability(dress, item.startDate, item.endDate).state !== 'available')
   const totals = computeTotals(items, getDress, 'delivery')
+
+  if (catalogLoading && items.length)
+    return (
+      <Container className="pb-8">
+        <PageTitle title="Rental Cart" />
+        <ListSkeleton rows={Math.min(items.length, 3)} label="Loading your rental cart…" />
+      </Container>
+    )
 
   if (!entries.length)
     return (

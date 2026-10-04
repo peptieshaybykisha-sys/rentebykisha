@@ -5,6 +5,7 @@ import { ErrorState, Notice } from '@/components/common/States'
 import { RentalSummary, StatusTimeline } from '@/components/rentals/RentalParts'
 import { Button } from '@/components/ui/Button'
 import Dialog from '@/components/ui/Dialog'
+import { DetailSkeleton, Skeleton } from '@/components/ui/Skeleton'
 import StatusBadge from '@/components/ui/StatusBadge'
 import { CANCELLABLE_STATUSES, STATUS_HELP } from '@/constants/rental'
 import { useReceiptUrl } from '@/hooks/useReceiptUrl'
@@ -21,7 +22,7 @@ export default function RentalDetail() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  if (!loaded) return <p className="py-24 text-center text-muted" aria-busy="true">Loading…</p>
+  if (!loaded) return <DetailSkeleton label="Loading your rental…" />
   if (!rental)
     return (
       <ErrorState title="We could not find that rental" to="/rentals" cta="Back to my rentals">
@@ -55,7 +56,7 @@ export default function RentalDetail() {
               {receipt ? (
                 <img src={receipt} alt="Uploaded GCash receipt" loading="lazy" className="max-h-72 rounded-2xl border border-line" />
               ) : (
-                <p className="text-sm text-muted">Loading receipt…</p>
+                <Skeleton className="h-72 w-52" />
               )}
             </section>
           )}

@@ -8,6 +8,7 @@ import { logout } from '@/lib/api'
 import { useAuthStore } from '@/stores'
 import { cn } from '@/lib/utils'
 import Toaster from '@/components/layout/Toaster'
+import { PageLoader } from '@/components/ui/Skeleton'
 
 /** Gate: only signed-in users whose profile role is 'admin' may enter. */
 export function RequireAdmin() {
@@ -17,7 +18,7 @@ export function RequireAdmin() {
   const email = user?.email
 
   if (!isSupabaseConfigured) return <Navigate to="/login" replace />
-  if (!ready) return <p className="grid min-h-svh place-items-center text-muted">Checking your access…</p>
+  if (!ready) return <PageLoader label="Checking your access…" />
   // Everyone signs in on the normal login page, admins included.
   if (!uid) return <Navigate to="/login" replace state={{ from: location.pathname, reason: 'auth' }} />
   if (!isAdmin)

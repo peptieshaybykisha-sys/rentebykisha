@@ -3,13 +3,15 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import Dialog from '@/components/ui/Dialog'
 import DressPhoto from '@/components/dresses/DressPhoto'
-import { useDresses } from '@/hooks/useDresses'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useCatalogStatus, useDresses } from '@/hooks/useDresses'
 import { formatPeso } from '@/lib/utils'
 
 export default function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState('')
   const navigate = useNavigate()
   const results = useDresses({ query: q })
+  const loading = useCatalogStatus() === 'loading'
 
   return (
     <Dialog open={open} onClose={onClose} title="Search dresses">
@@ -51,7 +53,17 @@ export default function SearchDialog({ open, onClose }: { open: boolean; onClose
             </Link>
           </li>
         ))}
-        {results.length === 0 && <li className="px-2 py-6 text-center text-muted">No dresses match “{q}”.</li>}
+        {loading &&
+          [0, 1, 2].map((i) => (
+            <li key={i} aria-hidden className="flex items-center gap-4 p-2">
+              <Skeleton className="h-16 w-12 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-5 w-3/5" />
+                <Skeleton className="h-4 w-2/5" />
+              </div>
+            </li>
+          ))}
+        {!loading && results.length === 0 && <li className="px-2 py-6 text-center text-muted">No dresses match “{q}”.</li>}
       </ul>
     </Dialog>
   )

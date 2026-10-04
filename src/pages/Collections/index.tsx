@@ -2,15 +2,20 @@ import { Link } from 'react-router-dom'
 import Container, { PageTitle } from '@/components/common/Container'
 import DressCard from '@/components/dresses/DressCard'
 import { CATEGORIES, OCCASION_BLURBS } from '@/constants/catalog'
-import { useDressList } from '@/hooks/useDresses'
+import { DressGridSkeleton } from '@/components/ui/Skeleton'
+import { useCatalogStatus, useDressList } from '@/hooks/useDresses'
 
 export default function Collections() {
   const dresses = useDressList()
+  const loading = useCatalogStatus() === 'loading'
   return (
     <Container className="pb-8">
       <PageTitle script="The lookbook" title="Collections">
         Six ways to dress for the moment.
       </PageTitle>
+      {loading ? (
+        <DressGridSkeleton count={8} />
+      ) : (
       <div className="space-y-20">
         {CATEGORIES.map((c) => {
           const list = dresses.filter((d) => d.category === c)
@@ -38,6 +43,7 @@ export default function Collections() {
           )
         })}
       </div>
+      )}
     </Container>
   )
 }

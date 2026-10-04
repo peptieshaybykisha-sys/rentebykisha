@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import DressPhoto from '@/components/dresses/DressPhoto'
 import { ButtonLink } from '@/components/ui/Button'
+import { ListSkeleton } from '@/components/ui/Skeleton'
 import { useCatalogStatus, useDressList } from '@/hooks/useDresses'
 import { formatPeso } from '@/lib/utils'
 
@@ -22,7 +23,9 @@ export default function DressList() {
 
       {status === 'error' && <p role="alert" className="mb-4 rounded-2xl bg-red-50 p-4 text-red-900">We could not load the dresses. Check that the database migration was run and your connection.</p>}
 
-      {dresses.length === 0 && status === 'ready' ? (
+      {status === 'loading' ? (
+        <ListSkeleton rows={5} label="Loading dresses…" />
+      ) : dresses.length === 0 && status === 'ready' ? (
         <div className="rounded-3xl border border-dashed border-blush p-10 text-center">
           <p className="font-serif text-3xl text-burgundy">No dresses yet</p>
           <p className="mt-2 text-muted">Add your first dress with real photos. It appears on the site right away.</p>

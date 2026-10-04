@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { NotConfigured } from '@/components/admin/AdminShell'
 import { Notice } from '@/components/common/States'
+import { ListSkeleton } from '@/components/ui/Skeleton'
 import StatusBadge from '@/components/ui/StatusBadge'
 import { ALL_STATUSES } from '@/constants/rental'
 import { listRentals } from '@/lib/adminApi'
@@ -63,7 +64,7 @@ export default function AdminRentals() {
       </div>
 
       {error && <Notice className="mb-4">{error}</Notice>}
-      {!rentals && !error && <p className="text-muted" aria-busy="true">Loading…</p>}
+      {!rentals && !error && <ListSkeleton rows={5} label="Loading rentals…" />}
       {rentals && list.length === 0 && <p className="rounded-3xl border border-dashed border-blush p-10 text-center text-muted">No rentals match.</p>}
       {list.length > 0 && (
         <ul className="divide-y divide-line overflow-hidden rounded-3xl border border-line bg-ivory">

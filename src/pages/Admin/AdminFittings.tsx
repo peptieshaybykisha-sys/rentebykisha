@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NotConfigured } from '@/components/admin/AdminShell'
 import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
+import { ListSkeleton } from '@/components/ui/Skeleton'
 import { useDressLookup } from '@/hooks/useDresses'
 import { deleteFitting, listFittings } from '@/lib/adminApi'
 import { isSupabaseConfigured } from '@/lib/supabase'
@@ -33,7 +34,7 @@ export default function AdminFittings() {
       <h1 className="text-4xl">Fittings</h1>
       <p className="mb-6 text-muted">Upcoming fitting appointments, soonest first.</p>
       {error && <Notice className="mb-4">{error}</Notice>}
-      {!list && !error && <p className="text-muted" aria-busy="true">Loading…</p>}
+      {!list && !error && <ListSkeleton rows={4} label="Loading fittings…" />}
       {list && upcoming.length === 0 && <p className="rounded-3xl border border-dashed border-blush p-10 text-center text-muted">No upcoming fittings.</p>}
       {upcoming.length > 0 && (
         <ul className="divide-y divide-line overflow-hidden rounded-3xl border border-line bg-ivory">

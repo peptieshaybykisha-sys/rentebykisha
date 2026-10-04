@@ -2,6 +2,7 @@ import { ReceiptText } from 'lucide-react'
 import Container, { PageTitle } from '@/components/common/Container'
 import { EmptyState } from '@/components/common/States'
 import { RentalCard } from '@/components/rentals/RentalParts'
+import { ListSkeleton } from '@/components/ui/Skeleton'
 import { useAccount } from '@/stores/account'
 
 export default function Rentals() {
@@ -11,9 +12,7 @@ export default function Rentals() {
     <Container className="max-w-4xl pb-8">
       <PageTitle title="My Rentals" />
       {!loaded ? (
-        <p className="py-16 text-center text-muted" aria-busy="true">
-          Loading your rentals…
-        </p>
+        <ListSkeleton rows={3} label="Loading your rentals…" />
       ) : error ? (
         <EmptyState title="We could not load your rentals">Please refresh the page, or try again in a moment.</EmptyState>
       ) : rentals.length ? (

@@ -7,6 +7,7 @@ import { EmptyState, Notice } from '@/components/common/States'
 import DressGrid from '@/components/dresses/DressGrid'
 import { RentalCard } from '@/components/rentals/RentalParts'
 import { Button } from '@/components/ui/Button'
+import { ListSkeleton } from '@/components/ui/Skeleton'
 import { Input } from '@/components/ui/Field'
 import { useDressList } from '@/hooks/useDresses'
 import { cancelFitting, removeAddress, saveAddress, updateProfile } from '@/lib/api'
@@ -15,11 +16,7 @@ import { formatLong } from '@/lib/utils'
 import { useAuthStore, useWishlistStore } from '@/stores'
 import { useAccount } from '@/stores/account'
 
-const Loading = () => (
-  <p className="py-10 text-muted" aria-busy="true">
-    Loading…
-  </p>
-)
+const Loading = () => <ListSkeleton rows={3} label="Loading…" />
 
 /* ---------- Profile ---------- */
 const profileSchema = z.object({ name: z.string().trim().min(2, 'Please enter your name.'), phone: phoneSchema })

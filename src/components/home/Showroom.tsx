@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import DressPhoto from '@/components/dresses/DressPhoto'
 import { SHOWROOM_SLOTS } from '@/constants/home'
+import { useCatalogStatus } from '@/hooks/useDresses'
 import { useHeroDresses } from '@/hooks/useSettings'
 import { cn } from '@/lib/utils'
 import { Flowers, Pendant, Rack } from './Decor'
@@ -8,6 +9,7 @@ import { Flowers, Pendant, Rack } from './Decor'
 /** The editorial showroom revealed behind the doors. The dresses shown are chosen in /admin > Hero. */
 function Showroom() {
   const dresses = useHeroDresses()
+  const loading = useCatalogStatus() === 'loading'
   // Show the attached dresses, or three "Coming soon" frames when none are attached yet.
   const slots = dresses.length ? SHOWROOM_SLOTS.slice(0, dresses.length) : SHOWROOM_SLOTS.slice(0, 3)
   return (
@@ -42,6 +44,8 @@ function Showroom() {
           >
             {dress ? (
               <DressPhoto dress={dress} priority className="size-full object-cover" />
+            ) : loading ? (
+              <div aria-hidden className="size-full animate-pulse bg-blush/50" />
             ) : (
               <div className="size-full bg-gradient-to-b from-blush-soft via-[#f8e8e4] to-blush">
                 {/* SVG text scales with the frame, so it always fits at any size */}

@@ -10,6 +10,7 @@ import Container from '@/components/common/Container'
 import { Notice } from '@/components/common/States'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Input, Select } from '@/components/ui/Field'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { STUDIO } from '@/constants/business'
 import { FITTING_SLOTS } from '@/constants/fitting'
 import { useDressList } from '@/hooks/useDresses'
@@ -132,9 +133,12 @@ export default function Fitting() {
             {!date ? (
               <p className="text-muted">Choose a date to see available times.</p>
             ) : !slotsLoaded ? (
-              <p className="text-muted" aria-busy="true">
-                Checking available times…
-              </p>
+              <div role="status" aria-busy="true" className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4">
+                <span className="sr-only">Checking available times…</span>
+                {FITTING_SLOTS.map((t) => (
+                  <Skeleton key={t} className="h-11 rounded-full" />
+                ))}
+              </div>
             ) : (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4">
                 {FITTING_SLOTS.map((s) => {
