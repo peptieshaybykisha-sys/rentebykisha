@@ -8,13 +8,14 @@ import { MoveButtons, NotConfigured } from '@/components/admin/AdminShell'
 import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
 import Dialog from '@/components/ui/Dialog'
+import { ListSkeleton } from '@/components/ui/Skeleton'
 import { Input, Select, Textarea } from '@/components/ui/Field'
 import { CATEGORIES, SIZE_PRESETS } from '@/constants/catalog'
 import { useDress } from '@/hooks/useDresses'
 import { deleteDress, deleteImages, newDressId, saveDress, uploadDressImage } from '@/lib/adminApi'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { cn, formatShort, move } from '@/lib/utils'
-import { useToastStore } from '@/stores'
+import { notify } from '@/lib/toast'
 import type { Category, DateRange, Dress, DressImage } from '@/types'
 
 const schema = z.object({
@@ -35,7 +36,7 @@ export default function DressForm() {
   const isNew = id === 'new'
   const { dress, loading } = useDress(isNew ? undefined : id)
   if (!isSupabaseConfigured) return <NotConfigured />
-  if (!isNew && loading) return <p className="text-muted">Loading…</p>
+  if (!isNew && loading) return <ListSkeleton rows={3} label="Loading dress…" />
   if (!isNew && !dress)
     return (
       <Notice>
@@ -47,7 +48,6 @@ export default function DressForm() {
 
 function Editor({ dress }: { dress?: Dress }) {
   const navigate = useNavigate()
-  const push = useToastStore((s) => s.push)
   const [dressId] = useState(() => dress?.id ?? newDressId())
   const [images, setImages] = useState<DressImage[]>(dress?.images ?? [])
   const [removed, setRemoved] = useState<string[]>([])
@@ -131,7 +131,7 @@ function Editor({ dress }: { dress?: Dress }) {
         createdAt: dress?.createdAt
       })
       if (removed.length) await deleteImages(removed)
-      push(dress ? 'Dress updated.' : 'Dress added.')
+      notify(dress ? 'Dress updated.' : 'Dress added.')
       navigate('/admin/dresses')
     } catch (e) {
       setError(e instanceof Error ? `We could not save: ${e.message}` : 'We could not save this dress.')
@@ -328,7 +328,7 @@ function Editor({ dress }: { dress?: Dress }) {
               className="bg-red-800 hover:bg-red-900"
               onClick={async () => {
                 await deleteDress(dress)
-                push('Dress deleted.')
+                notify('Dress deleted.')
                 navigate('/admin/dresses')
               }}
             >

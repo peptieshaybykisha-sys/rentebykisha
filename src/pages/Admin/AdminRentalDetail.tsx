@@ -4,17 +4,17 @@ import { Notice } from '@/components/common/States'
 import { RentalSummary } from '@/components/rentals/RentalParts'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Field'
+import { ListSkeleton, Skeleton } from '@/components/ui/Skeleton'
 import StatusBadge from '@/components/ui/StatusBadge'
 import { ALL_STATUSES, PAYMENT_STATUSES } from '@/constants/rental'
 import { useReceiptUrl } from '@/hooks/useReceiptUrl'
 import { adminReceiptUrl, listRentals, updateRental } from '@/lib/adminApi'
 import { formatLong } from '@/lib/utils'
-import { useToastStore } from '@/stores'
+import { notify } from '@/lib/toast'
 import type { PaymentStatus, Rental, RentalStatus } from '@/types'
 
 export default function AdminRentalDetail() {
   const { id } = useParams()
-  const push = useToastStore((s) => s.push)
   const [rental, setRental] = useState<Rental | null | undefined>(undefined)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -39,7 +39,7 @@ export default function AdminRentalDetail() {
     try {
       await updateRental(rental.id, patch)
       setVersion((v) => v + 1)
-      push(message)
+      notify(message)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'We could not save that change.')
     } finally {
@@ -47,7 +47,7 @@ export default function AdminRentalDetail() {
     }
   }
 
-  if (rental === undefined) return <p className="text-muted" aria-busy="true">{error || 'Loading…'}</p>
+  if (rental === undefined) return error ? <Notice>{error}</Notice> : <ListSkeleton rows={3} label="Loading rental…" />
   if (rental === null)
     return (
       <Notice>
@@ -84,7 +84,7 @@ export default function AdminRentalDetail() {
                 <img src={receipt} alt="Customer's GCash receipt" className="max-h-96 rounded-2xl border border-line" />
               </a>
             ) : (
-              <p className="text-sm text-muted">{rental.receiptPath ? 'Loading receipt…' : 'No receipt on file.'}</p>
+              rental.receiptPath ? <Skeleton className="h-72 w-52" /> : <p className="text-sm text-muted">No receipt on file.</p>
             )}
           </section>
           <section aria-labelledby="history">

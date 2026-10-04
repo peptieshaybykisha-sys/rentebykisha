@@ -8,7 +8,9 @@ import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Field'
 import { login } from '@/lib/api'
+import { notify } from '@/lib/toast'
 import { useAuthStore } from '@/stores'
+import { toast } from 'sonner'
 
 const schema = z.object({
   email: z.string().min(1, 'Please enter your email.').email('That email does not look right.'),
@@ -32,8 +34,10 @@ export default function Login() {
     setError('')
     try {
       await login(v.email, v.password) // the redirect below happens once the session and admin check finish
+      notify('Welcome back!')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
+      toast.error(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
     }
   }
 

@@ -2,6 +2,7 @@
  * Customer API on Supabase. Every function throws ApiError with a message that is safe to show people.
  * Security does not depend on this file: row level security and the database functions enforce the rules.
  */
+import { toast } from 'sonner'
 import { supabase } from './supabase'
 import { refreshCatalog } from '@/stores/catalog'
 import { useAccount } from '@/stores/account'
@@ -50,6 +51,7 @@ export async function register(data: { name: string; email: string; phone: strin
 
 export async function logout() {
   await client().auth.signOut()
+  toast.success('You have been logged out.')
 }
 
 export async function requestPasswordReset(email: string) {

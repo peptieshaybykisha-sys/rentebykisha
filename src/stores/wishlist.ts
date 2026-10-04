@@ -1,3 +1,4 @@
+import { toast } from 'sonner'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { supabase } from '@/lib/supabase'
@@ -20,6 +21,7 @@ export const useWishlistStore = create<WishlistState>()(
       toggle: (id) => {
         const saved = get().ids.includes(id)
         set({ ids: saved ? get().ids.filter((x) => x !== id) : [...get().ids, id] })
+        toast(saved ? 'Removed from your wishlist.' : 'Saved to your wishlist.')
         const uid = useAuthStore.getState().user?.id
         if (!uid || !supabase) return
         const op = saved

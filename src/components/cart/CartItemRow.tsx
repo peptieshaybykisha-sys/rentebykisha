@@ -1,3 +1,4 @@
+import { toast } from 'sonner'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
@@ -83,7 +84,10 @@ export default function CartItemRow({ item, dress }: { item: CartItem; dress: Dr
             <button type="button" onClick={open} className={cn('link-underline min-h-11 text-[0.95rem] font-medium text-burgundy')}>
               Change dates
             </button>
-            <button type="button" onClick={() => remove(dress.id)} className="flex min-h-11 items-center gap-1.5 text-[0.95rem] text-muted hover:text-burgundy">
+            <button type="button" onClick={() => {
+              remove(dress.id)
+              toast(`${dress.name} removed from your cart.`)
+            }} className="flex min-h-11 items-center gap-1.5 text-[0.95rem] text-muted hover:text-burgundy">
               <Trash2 className="size-4" aria-hidden /> Remove
             </button>
           </div>

@@ -4,6 +4,7 @@ import { MoveButtons, NotConfigured } from '@/components/admin/AdminShell'
 import { Notice } from '@/components/common/States'
 import DressPhoto from '@/components/dresses/DressPhoto'
 import { Button } from '@/components/ui/Button'
+import { ListSkeleton } from '@/components/ui/Skeleton'
 import { Input, Select, Textarea } from '@/components/ui/Field'
 import { HERO_MAX_DRESSES, HERO_SLOT_NAMES } from '@/constants/home'
 import { DEFAULT_HOW_IT_WORKS, MAX_STEPS, STEP_ICON_NAMES, STEP_ICONS } from '@/constants/howItWorks'
@@ -12,7 +13,7 @@ import { useDressList } from '@/hooks/useDresses'
 import { saveSetting } from '@/lib/adminApi'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { move } from '@/lib/utils'
-import { useToastStore } from '@/stores'
+import { notify } from '@/lib/toast'
 import { useCatalog } from '@/stores/catalog'
 import type { HowItWorksContent, SizeGuideContent, StepIconName } from '@/types'
 
@@ -20,7 +21,6 @@ import type { HowItWorksContent, SizeGuideContent, StepIconName } from '@/types'
 function EditorFrame({ title, intro, children, onSave, onReset }: { title: string; intro: string; children: ReactNode; onSave: () => Promise<void>; onReset?: () => void }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const push = useToastStore((s) => s.push)
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="text-4xl">{title}</h1>
@@ -36,7 +36,7 @@ function EditorFrame({ title, intro, children, onSave, onReset }: { title: strin
             setError('')
             try {
               await onSave()
-              push('Saved. The site is updated.')
+              notify('Saved. The site is updated.')
             } catch (e) {
               setError(e instanceof Error ? `We could not save: ${e.message}` : 'We could not save.')
             } finally {
@@ -66,7 +66,7 @@ export function SizeGuideEditor() {
   const { ready, configured } = useReadyGuard()
   const saved = useCatalog((s) => s.sizeGuide)
   if (!configured) return <NotConfigured />
-  if (!ready) return <p className="text-muted">Loading…</p>
+  if (!ready) return <ListSkeleton rows={3} label="Loading…" />
   return <SizeGuideForm initial={saved ?? DEFAULT_SIZE_GUIDE} />
 }
 
@@ -137,7 +137,7 @@ export function HeroEditor() {
   const { ready, configured } = useReadyGuard()
   const saved = useCatalog((s) => s.hero)
   if (!configured) return <NotConfigured />
-  if (!ready) return <p className="text-muted">Loading…</p>
+  if (!ready) return <ListSkeleton rows={3} label="Loading…" />
   return <HeroForm initial={saved?.dressIds ?? []} />
 }
 
@@ -216,7 +216,7 @@ export function HowItWorksEditor() {
   const { ready, configured } = useReadyGuard()
   const saved = useCatalog((s) => s.howItWorks)
   if (!configured) return <NotConfigured />
-  if (!ready) return <p className="text-muted">Loading…</p>
+  if (!ready) return <ListSkeleton rows={3} label="Loading…" />
   return <HowItWorksForm initial={saved ?? DEFAULT_HOW_IT_WORKS} />
 }
 

@@ -32,27 +32,19 @@ export default function BoutiqueHero() {
   const p = reduce ? scrollYProgress : springed
 
   const endScale = useMotionValue(1.8)
-  const shift = useMotionValue(0)
 
   useEffect(() => {
     const measure = () => {
       const arch = archRef.current
-      const plaque = plaqueRef.current
-      if (!arch || !plaque) return
-      const vw = window.innerWidth
-      const vh = window.innerHeight
-      const W = arch.offsetWidth
-      const H = arch.offsetHeight
-      const header = vw >= 768 ? 76 : 64
-      const needAbove = header + Math.max(plaque.offsetHeight * 0.52, 0) + 24 + 56
-      endScale.set(Math.max(vw / W, vh / H) * 1.04)
-      shift.set(Math.max(0, needAbove - (vh - H) / 2))
+      if (!arch) return
+      endScale.set(Math.max(window.innerWidth / arch.offsetWidth, window.innerHeight / arch.offsetHeight) * 1.04)
     }
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(document.documentElement)
+    if (archRef.current) ro.observe(archRef.current)
     return () => ro.disconnect()
-  }, [endScale, shift])
+  }, [endScale])
 
   useMotionValueEvent(p, 'change', (v) => setOpened(v > 0.82))
 
@@ -68,9 +60,8 @@ export default function BoutiqueHero() {
   const scale = useTransform([p, endScale] as MotionValue<number>[], ([v, e]: number[]) =>
     reduce ? 1 : 1 + (e - 1) * smooth(clamp01((v - 0.2) / 0.8)),
   )
-  const y = useTransform([p, shift] as MotionValue<number>[], ([v, s]: number[]) =>
-    `calc(-50% + ${reduce ? s : s * (1 - smooth(clamp01((v - 0.2) / 0.8)))}px)`,
-  )
+  // --hero-shift is pure CSS, so it is right on the first paint; it lowers the scene so the sign clears the header.
+  const y = useTransform(p, (v) => `calc(-50% + var(--hero-shift) * ${reduce ? 1 : 1 - smooth(clamp01((v - 0.2) / 0.8))})`)
 
   const introOpacity = useTransform(p, [0, 0.12], [1, 0])
   const introY = useTransform(p, [0, 0.12], [0, 16])
@@ -88,7 +79,7 @@ export default function BoutiqueHero() {
   return (
     <section ref={sectionRef} aria-label="Boutique entrance" className={cn('relative', reduce ? 'h-[150svh]' : 'h-[190svh]')}>
       <h1 className="sr-only">Renté by Kisha — dress rental boutique</h1>
-      <div className="sticky top-0 h-svh overflow-hidden bg-cream">
+      <div className="sticky top-0 h-svh overflow-hidden bg-cream [--hero-shift:max(0px,calc(64px+0.52*min(40vw,10rem)+80px-(100svh-min(52svh,36rem))/2))] md:[--hero-shift:max(0px,calc(76px+5.72rem+80px-(100svh-min(60svh,40rem))/2))]">
         {/* The stage: wall, sign, doorway. It is dollied toward the doorway as the doors open. */}
         <motion.div className="absolute left-1/2 top-1/2 origin-center" style={{ x: '-50%', y, scale }}>
           <div aria-hidden className="absolute -inset-[200vmax] -z-10 bg-gradient-to-b from-[#faf2f1] via-[#f3e4e4] to-[#ead6d6]" />

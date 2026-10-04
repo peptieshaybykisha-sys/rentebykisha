@@ -10,17 +10,19 @@ import RentalDatePicker from '@/components/dresses/RentalDatePicker'
 import SizeGuide from '@/components/dresses/SizeGuide'
 import WishlistButton from '@/components/dresses/WishlistButton'
 import { Button, ButtonLink } from '@/components/ui/Button'
+import { DetailSkeleton } from '@/components/ui/Skeleton'
 import { useDress } from '@/hooks/useDresses'
 import { checkAvailability } from '@/lib/availability'
 import { rentalDays, rentalFee } from '@/lib/pricing'
 import { cn, formatPeso } from '@/lib/utils'
-import { useCartStore, useToastStore } from '@/stores'
+import { useCartStore } from '@/stores'
+import { notify } from '@/lib/toast'
 import type { Dress, Size } from '@/types'
 
 export default function DressDetails() {
   const { id } = useParams()
   const { dress, loading } = useDress(id)
-  if (loading) return <div className="min-h-[70svh]" aria-busy="true" aria-label="Loading dress" />
+  if (loading) return <DetailSkeleton label="Loading dress…" />
   if (!dress)
     return (
       <ErrorState title="We could not find that dress" to="/dresses" cta="Browse the collection">
@@ -34,7 +36,6 @@ export default function DressDetails() {
 function DressView({ dress }: { dress: Dress }) {
   const inCart = useCartStore((s) => s.items.find((i) => i.dressId === dress.id))
   const addToCart = useCartStore((s) => s.add)
-  const push = useToastStore((s) => s.push)
 
   const [imgIndex, setImgIndex] = useState(0)
   const [size, setSize] = useState<Size | undefined>(inCart?.size)
@@ -51,7 +52,7 @@ function DressView({ dress }: { dress: Dress }) {
     setAttempted(true)
     if (!canAdd || !range.start || !range.end || !size) return
     addToCart({ dressId: dress.id, size, startDate: range.start, endDate: range.end })
-    push(inCart ? 'Rental updated.' : `${dress.name} is in your rental cart.`, { label: 'View cart', href: '/cart' })
+    notify(inCart ? 'Rental updated.' : `${dress.name} is in your rental cart.`, { label: 'View cart', href: '/cart' })
   }
 
   return (

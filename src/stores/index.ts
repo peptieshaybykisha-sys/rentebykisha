@@ -53,25 +53,3 @@ export const useCheckoutStore = create<CheckoutState>()(
     { name: 'rente-checkout' },
   ),
 )
-
-/* ---------- Toasts ---------- */
-export interface Toast {
-  id: number
-  message: string
-  to?: { label: string; href: string }
-}
-interface ToastState {
-  toasts: Toast[]
-  push: (message: string, to?: Toast['to']) => void
-  dismiss: (id: number) => void
-}
-let toastId = 0
-export const useToastStore = create<ToastState>()((set) => ({
-  toasts: [],
-  push: (message, to) => {
-    const id = ++toastId
-    set((s) => ({ toasts: [...s.toasts.slice(-2), { id, message, to }] }))
-    setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), 4500)
-  },
-  dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
-}))

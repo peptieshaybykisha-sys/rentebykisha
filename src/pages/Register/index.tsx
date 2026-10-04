@@ -6,6 +6,8 @@ import { z } from 'zod'
 import AuthShell from '@/components/common/AuthShell'
 import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
+import { toast } from 'sonner'
+import { notify } from '@/lib/toast'
 import { Input } from '@/components/ui/Field'
 import { register as registerUser } from '@/lib/api'
 import { phoneSchema } from '@/lib/validation'
@@ -36,10 +38,16 @@ export default function Register() {
     setError('')
     try {
       const { needsConfirmation } = await registerUser({ name, email, phone, password })
-      if (needsConfirmation) setConfirmEmail(email)
-      else navigate(from ?? '/account', { replace: true })
+      if (needsConfirmation) {
+        setConfirmEmail(email)
+        notify('Account created. Check your email to confirm it.')
+      } else {
+        notify('Account created. Welcome to Rente by Kisha!')
+        navigate(from ?? '/account', { replace: true })
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
+      toast.error(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
     }
   }
 

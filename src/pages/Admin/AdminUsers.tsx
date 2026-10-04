@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
 import { NotConfigured } from '@/components/admin/AdminShell'
 import { Notice } from '@/components/common/States'
+import { ListSkeleton } from '@/components/ui/Skeleton'
 import { listUsers, setUserRole, type UserRow } from '@/lib/adminApi'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import { useToastStore } from '@/stores'
+import { notify } from '@/lib/toast'
 import { useAuthStore } from '@/stores'
 
 export default function AdminUsers() {
   const me = useAuthStore((s) => s.user?.id)
-  const push = useToastStore((s) => s.push)
   const [users, setUsers] = useState<UserRow[] | null>(null)
   const [error, setError] = useState('')
   const [q, setQ] = useState('')
@@ -38,7 +38,7 @@ export default function AdminUsers() {
     setError('')
     try {
       await setUserRole(u.id, role)
-      push(role === 'admin' ? `${u.name || u.email} is now an admin.` : `${u.name || u.email} is now a customer.`)
+      notify(role === 'admin' ? `${u.name || u.email} is now an admin.` : `${u.name || u.email} is now a customer.`)
       setVersion((v) => v + 1)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'We could not change that role.')
@@ -60,7 +60,7 @@ export default function AdminUsers() {
       </label>
 
       {error && <Notice className="mb-4">{error}</Notice>}
-      {!users && !error && <p className="text-muted" aria-busy="true">Loading…</p>}
+      {!users && !error && <ListSkeleton rows={4} label="Loading users…" />}
       {users && list.length === 0 && <p className="rounded-3xl border border-dashed border-blush p-10 text-center text-muted">No users match.</p>}
       {list.length > 0 && (
         <ul className="divide-y divide-line overflow-hidden rounded-3xl border border-line bg-ivory">

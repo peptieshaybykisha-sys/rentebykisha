@@ -1,3 +1,4 @@
+import { toast } from 'sonner'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
@@ -6,7 +7,8 @@ import OrderSummary from '@/components/cart/OrderSummary'
 import { CustomerStep, DetailsStep, PaymentStep, Stepper } from '@/components/checkout/CheckoutSteps'
 import Container, { PageTitle } from '@/components/common/Container'
 import { EmptyState, Notice } from '@/components/common/States'
-import { useDressLookup } from '@/hooks/useDresses'
+import { ListSkeleton } from '@/components/ui/Skeleton'
+import { useCatalogStatus, useDressLookup } from '@/hooks/useDresses'
 import { createRental } from '@/lib/api'
 import { refreshCatalog } from '@/stores/catalog'
 import { checkAvailability } from '@/lib/availability'
@@ -19,6 +21,7 @@ export default function Checkout() {
   const user = useAuthStore((s) => s.user)!
   const items = useCartStore((s) => s.items)
   const getDress = useDressLookup()
+  const catalogLoading = useCatalogStatus() === 'loading'
   const clearCart = useCartStore((s) => s.clear)
   const draft = useCheckoutStore()
   const resetDraft = useCheckoutStore((s) => s.reset)
@@ -33,6 +36,14 @@ export default function Checkout() {
     const d = getDress(it.dressId)
     return !d || checkAvailability(d, it.startDate, it.endDate).state !== 'available'
   })
+
+  if (catalogLoading && items.length)
+    return (
+      <Container className="pb-8">
+        <PageTitle title="Checkout" />
+        <ListSkeleton rows={2} label="Loading your order…" />
+      </Container>
+    )
 
   if (!items.length)
     return (
@@ -71,9 +82,11 @@ export default function Checkout() {
       })
       navigate(`/confirmation/${rentalId}`, { replace: true })
       clearCart()
+      toast.success('Rental request placed!')
       resetDraft()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong on our side. Please try again.')
+      toast.error('We could not place your rental. Please try again.')
       void refreshCatalog() // someone may have just booked those dates
       setSubmitting(false)
     }
