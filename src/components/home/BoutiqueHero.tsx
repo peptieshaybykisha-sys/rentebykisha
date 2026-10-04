@@ -13,8 +13,7 @@ import { ChevronDown } from 'lucide-react'
 import logo from '@/assets/logo.png'
 import { DOOR_ANGLES, DOOR_ANGLES_REDUCED, DOOR_PROGRESS } from '@/constants/home'
 import { cn } from '@/lib/utils'
-import { Flowers } from './Decor'
-import Door, { HangingBow } from './Door'
+import Door, { DoorFrame } from './Door'
 import Showroom from './Showroom'
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
@@ -45,7 +44,7 @@ export default function BoutiqueHero() {
       const W = arch.offsetWidth
       const H = arch.offsetHeight
       const header = vw >= 768 ? 76 : 64
-      const needAbove = header + plaque.offsetHeight + 24
+      const needAbove = header + plaque.offsetHeight * 0.52 + 24 + 40
       endScale.set(Math.max(vw / W, vh / H) * 1.04)
       shift.set(Math.max(0, needAbove - (vh - H) / 2))
     }
@@ -92,24 +91,26 @@ export default function BoutiqueHero() {
       <div className="sticky top-0 h-svh overflow-hidden bg-cream">
         {/* The stage: wall, sign, doorway. It is dollied toward the doorway as the doors open. */}
         <motion.div className="absolute left-1/2 top-1/2 origin-center" style={{ x: '-50%', y, scale }}>
-          <div aria-hidden className="absolute -inset-[200vmax] -z-10 bg-gradient-to-b from-[#fbf3ec] via-blush-soft to-[#f2d7d6]" />
+          <div aria-hidden className="absolute -inset-[200vmax] -z-10 bg-gradient-to-b from-[#faf2f1] via-[#f3e4e4] to-[#ead6d6]" />
 
           {/* boutique sign: hangs above the doorway */}
-          <div className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
+          <div className="absolute bottom-full left-1/2 z-20 -mb-[min(21vw,5.2rem)] -translate-x-1/2 md:-mb-[5.4rem]">
             <div ref={plaqueRef} className="aspect-square w-[min(40vw,10rem)] md:w-[11rem]">
               <img src={logo} alt="Renté by Kisha" width={500} height={500} fetchPriority="high" className="size-full object-contain drop-shadow-[0_18px_18px_rgba(90,16,37,0.3)]" />
             </div>
           </div>
 
-          {/* side flowers */}
-          <Flowers className="absolute -left-[22%] bottom-0 hidden h-40 md:block" />
-          <Flowers className="absolute -right-[22%] bottom-0 hidden h-40 md:block" />
+          {/* wall mouldings, floor and the plaster architrave */}
+          <div aria-hidden className="dr-wallpanel -left-[calc(15rem+5rem)] hidden md:block" />
+          <div aria-hidden className="dr-wallpanel -right-[calc(15rem+5rem)] hidden md:block" />
+          <div aria-hidden className="dr-floor" />
+          <DoorFrame />
 
           {/* doorway */}
           <div
             ref={archRef}
             onClick={opened ? undefined : openDoors}
-            className="relative h-[min(52svh,36rem)] w-[min(88vw,26rem)] cursor-pointer overflow-hidden rounded-t-[999px] bg-[#f3dcc0] shadow-[0_0_0_7px_#fffdf8,0_0_0_8px_rgba(201,164,92,0.6),0_0_0_20px_#f6e4e3,0_0_0_21px_#e8dcd2,0_30px_60px_-20px_rgba(90,16,37,0.45)] [perspective:1300px] md:w-[min(46vw,40rem)] md:h-[min(56svh,38rem)]"
+            className="relative h-[min(52svh,36rem)] w-[min(88vw,26rem)] cursor-pointer overflow-hidden rounded-t-[999px] bg-[#f3dcc0] shadow-[inset_0_0_14px_rgba(70,20,34,0.45)] [perspective:1300px] md:aspect-[5/8] md:h-[min(60svh,40rem)] md:w-auto"
           >
             <Showroom />
             <motion.div aria-hidden className="absolute inset-0 bg-[#2b120e]" style={{ opacity: dim }} />
@@ -128,8 +129,15 @@ export default function BoutiqueHero() {
             />
           </div>
 
+          {/* sunlight falling across the doorway */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-x-[30%] -inset-y-[10%] opacity-40 blur-[12px] mix-blend-soft-light [background:repeating-linear-gradient(115deg,transparent_0_9%,rgba(255,255,255,0.95)_9%_17%,transparent_17%_24%,rgba(255,255,255,0.6)_24%_28%)]"
+            style={{ maskImage: 'linear-gradient(135deg,transparent 10%,#000 45%,#000 70%,transparent 95%)', WebkitMaskImage: 'linear-gradient(135deg,transparent 10%,#000 45%,#000 70%,transparent 95%)' }}
+          />
+
           {/* doorstep */}
-          <div aria-hidden className="mx-auto -mt-px h-3 w-[calc(100%+3.2rem)] -translate-x-[1.6rem] rounded-b-md bg-gradient-to-b from-[#f5ece0] to-[#e5d6c3] shadow-[0_14px_20px_-10px_rgba(90,16,37,0.3)]" />
+          <div aria-hidden className="relative mx-auto mt-[2.4rem] h-3 w-[calc(100%+6.4rem)] -translate-x-[3.2rem] rounded-b-md bg-gradient-to-b from-[#f8f0ee] to-[#e6d6d4] shadow-[0_14px_20px_-10px_rgba(90,16,37,0.3)]" />
         </motion.div>
 
         {/* opening prompts */}

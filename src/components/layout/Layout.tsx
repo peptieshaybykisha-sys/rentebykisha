@@ -1,10 +1,11 @@
 import { Suspense, useEffect } from 'react'
-import { useLocation, useOutlet } from 'react-router-dom'
+import { Navigate, useLocation, useOutlet } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
 import Header from './Header'
 import Footer from './Footer'
 import BottomNav from './BottomNav'
 import Toaster from './Toaster'
+import { useAuthStore } from '@/stores'
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation()
@@ -20,6 +21,10 @@ export default function Layout() {
   const reduce = useReducedMotion()
   const isHome = pathname === '/'
   const outlet = useOutlet()
+  const isAdmin = useAuthStore((s) => s.isAdmin)
+
+  // Admins work in the dashboard only: no shop pages, cart or customer features.
+  if (isAdmin) return <Navigate to="/admin" replace />
 
   return (
     <div className="flex min-h-svh flex-col">

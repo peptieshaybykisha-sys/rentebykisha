@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { Link, Navigate, NavLink, Outlet } from 'react-router-dom'
-import { ArrowDown, ArrowUp, ExternalLink, LogOut, X } from 'lucide-react'
+import { Navigate, NavLink, Outlet } from 'react-router-dom'
+import { ArrowDown, ArrowUp, LogOut, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Notice } from '@/components/common/States'
 import { ADMIN_NAV } from '@/constants/navigation'
@@ -46,9 +46,6 @@ export function AdminLayout() {
             <span className="text-sm font-medium uppercase tracking-[0.25em] text-muted">Admin</span>
           </div>
           <div className="flex items-center gap-1 text-sm">
-            <Link to="/" className="flex min-h-11 items-center gap-1.5 rounded-full px-3 text-burgundy hover:bg-blush-soft">
-              View site <ExternalLink className="size-4" aria-hidden />
-            </Link>
             <button
               type="button"
               onClick={() => void adminSignOut()}

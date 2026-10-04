@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { Heart, LayoutDashboard, Search, ShoppingBag, ReceiptText, User } from 'lucide-react'
+import { Heart, Search, ShoppingBag, ReceiptText, User } from 'lucide-react'
 import { useAuthStore, useCartStore, useWishlistStore } from '@/stores'
 import { cn } from '@/lib/utils'
 import { MAIN_NAV } from '@/constants/navigation'
@@ -38,7 +38,6 @@ export default function Header() {
   const cartCount = useCartStore((s) => s.items.length)
   const saved = useWishlistStore((s) => s.ids.length)
   const user = useAuthStore((s) => s.user)
-  const isAdmin = useAuthStore((s) => s.isAdmin)
   const transparent = pathname === '/' && !scrolled
 
   useEffect(() => {
@@ -96,11 +95,6 @@ export default function Header() {
                 <User className="size-[1.35rem]" strokeWidth={1.6} />
               </IconLink>
             </span>
-            {isAdmin && (
-              <IconLink to="/admin" label="Admin dashboard">
-                <LayoutDashboard className="size-[1.35rem]" strokeWidth={1.6} />
-              </IconLink>
-            )}
             <IconLink to="/cart" label="Rental cart">
               <ShoppingBag className="size-[1.35rem]" strokeWidth={1.6} />
               <Badge n={cartCount} />
