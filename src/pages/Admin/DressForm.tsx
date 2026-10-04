@@ -39,7 +39,7 @@ export default function DressForm() {
   if (!isNew && !dress)
     return (
       <Notice>
-        We could not find that dress. <Link to="/admin" className="underline">Back to dresses</Link>
+        We could not find that dress. <Link to="/admin/dresses" className="underline">Back to dresses</Link>
       </Notice>
     )
   return <Editor key={dress?.id ?? 'new'} dress={dress} />
@@ -132,7 +132,7 @@ function Editor({ dress }: { dress?: Dress }) {
       })
       if (removed.length) await deleteImages(removed)
       push(dress ? 'Dress updated.' : 'Dress added.')
-      navigate('/admin')
+      navigate('/admin/dresses')
     } catch (e) {
       setError(e instanceof Error ? `We could not save: ${e.message}` : 'We could not save this dress.')
     }
@@ -141,7 +141,7 @@ function Editor({ dress }: { dress?: Dress }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="mx-auto max-w-3xl space-y-10">
       <div>
-        <Link to="/admin" className="link-underline text-[0.95rem] text-burgundy">
+        <Link to="/admin/dresses" className="link-underline text-[0.95rem] text-burgundy">
           ← All dresses
         </Link>
         <h1 className="mt-2 text-4xl">{dress ? dress.name : 'Add a dress'}</h1>
@@ -308,7 +308,7 @@ function Editor({ dress }: { dress?: Dress }) {
         <Button type="submit" size="lg" loading={isSubmitting} disabled={uploading > 0}>
           {dress ? 'Save changes' : 'Add dress'}
         </Button>
-        <Button variant="ghost" onClick={() => navigate('/admin')}>
+        <Button variant="ghost" onClick={() => navigate('/admin/dresses')}>
           Cancel
         </Button>
         {dress && (
@@ -329,7 +329,7 @@ function Editor({ dress }: { dress?: Dress }) {
               onClick={async () => {
                 await deleteDress(dress)
                 push('Dress deleted.')
-                navigate('/admin')
+                navigate('/admin/dresses')
               }}
             >
               Yes, delete

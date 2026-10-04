@@ -1,4 +1,4 @@
-import type { RentalStatus } from '@/types'
+import type { PaymentStatus, RentalStatus } from '@/types'
 
 export const STATUS_FLOW: RentalStatus[] = [
   'Payment Verification',
@@ -42,3 +42,19 @@ export const STATUS_HELP: Record<RentalStatus, string> = {
   Completed: 'All done. Your security deposit has been settled.',
   Cancelled: 'This rental was cancelled.',
 }
+
+export const ALL_STATUSES: RentalStatus[] = [
+  'Pending Payment',
+  'Payment Verification',
+  'Confirmed',
+  'Preparing',
+  'Ready for Pickup',
+  'Rented',
+  'Return Due',
+  'Returned',
+  'Under Inspection',
+  'Completed',
+  'Cancelled',
+]
+
+export const PAYMENT_STATUSES: PaymentStatus[] = ['Pending Verification', 'Verified', 'Rejected', 'Deposit Refunded']

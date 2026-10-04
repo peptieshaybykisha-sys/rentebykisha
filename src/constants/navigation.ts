@@ -23,7 +23,9 @@ export const ACCOUNT_TABS: { id: string; label: string; icon: LucideIcon }[] = [
 ]
 
 export const ADMIN_NAV = [
-  { to: '/admin', label: 'Dresses', end: true },
+  { to: '/admin', label: 'Rentals', end: true },
+  { to: '/admin/dresses', label: 'Dresses' },
+  { to: '/admin/fittings', label: 'Fittings' },
   { to: '/admin/hero', label: 'Hero dresses' },
   { to: '/admin/size-guide', label: 'Size guide' },
   { to: '/admin/how-it-works', label: 'How it works' },

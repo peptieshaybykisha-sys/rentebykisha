@@ -13,6 +13,7 @@ const Checkout = lazy(() => import('@/pages/Checkout'))
 const Confirmation = lazy(() => import('@/pages/Confirmation'))
 const Login = lazy(() => import('@/pages/Login'))
 const ForgotPassword = lazy(() => import('@/pages/Login/ForgotPassword'))
+const ResetPassword = lazy(() => import('@/pages/Login/ResetPassword'))
 const Register = lazy(() => import('@/pages/Register'))
 const Account = lazy(() => import('@/pages/Account'))
 const Rentals = lazy(() => import('@/pages/Rentals'))
@@ -21,6 +22,9 @@ const Wishlist = lazy(() => import('@/pages/Wishlist'))
 const Fitting = lazy(() => import('@/pages/Fitting'))
 const HowItWorks = lazy(() => import('@/pages/HowItWorks'))
 const AdminLogin = lazy(() => import('@/pages/Admin/AdminLogin'))
+const AdminRentals = lazy(() => import('@/pages/Admin/AdminRentals'))
+const AdminRentalDetail = lazy(() => import('@/pages/Admin/AdminRentalDetail'))
+const AdminFittings = lazy(() => import('@/pages/Admin/AdminFittings'))
 const DressList = lazy(() => import('@/pages/Admin/DressList'))
 const DressForm = lazy(() => import('@/pages/Admin/DressForm'))
 const SizeGuideEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.SizeGuideEditor })))
@@ -35,7 +39,10 @@ export default function AppRoutes() {
       <Route path="admin/login" element={<AdminLogin />} />
       <Route path="admin" element={<RequireAdmin />}>
         <Route element={<AdminLayout />}>
-          <Route index element={<DressList />} />
+          <Route index element={<AdminRentals />} />
+          <Route path="rentals/:id" element={<AdminRentalDetail />} />
+          <Route path="dresses" element={<DressList />} />
+          <Route path="fittings" element={<AdminFittings />} />
           <Route path="dresses/:id" element={<DressForm />} />
           <Route path="hero" element={<HeroEditor />} />
           <Route path="size-guide" element={<SizeGuideEditor />} />
@@ -53,6 +60,7 @@ export default function AppRoutes() {
         <Route path="how-it-works" element={<HowItWorks />} />
         <Route path="login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="reset-password" element={<ResetPassword />} />
         <Route path="register" element={<Register />} />
         <Route element={<RequireAuth />}>
           <Route path="checkout" element={<Checkout />} />
