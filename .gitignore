@@ -26,3 +26,7 @@ dist-ssr
 # Local environment (Firebase keys)
 .env
 .env.local
+
+# Firebase Admin SDK key (secret)
+serviceAccountKey.json
+*-firebase-adminsdk-*.json

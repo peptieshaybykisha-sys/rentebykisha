@@ -14,9 +14,10 @@ There are no placeholder dresses: the site is empty until an admin adds them.
 1. Create a Firebase project, then add a **Web app** and copy its config into `.env`.
 2. Enable **Authentication > Email/Password**, **Firestore** and **Storage**
    (Storage requires the Blaze pay-as-you-go plan; usage for a small catalogue is normally within the free quota).
-3. Publish the rules: paste `firestore.rules` and `storage.rules` into the console, or run `firebase deploy --only firestore:rules,storage`.
-4. Create the admin: in **Authentication > Users** add a user (email + password), copy its **User UID**, then in Firestore create
-   a document in the collection `admins` whose **document ID is that UID** (any field, e.g. `role: "admin"`).
+3. Publish the rules: run `npx firebase-tools login` once, then `npm run deploy:rules` (or paste `firestore.rules` and `storage.rules` into the console).
+4. Create the admin account with the seeder:
+   - Firebase console > Project settings > Service accounts > **Generate new private key**. Save it as `serviceAccountKey.json` in the project root (git-ignored).
+   - Put `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`, then run `npm run seed:admin`. It creates the Auth user and the `admins/<uid>` document. Safe to re-run (it also resets the password).
 5. Sign in at `/admin/login`.
 
 Admin area (`/admin`): Dresses (photos, price, deposit, custom sizes, blocked dates), Hero dresses (the ones behind the doors),
