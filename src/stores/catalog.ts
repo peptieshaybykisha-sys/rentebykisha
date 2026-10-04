@@ -1,6 +1,5 @@
-import { collection, doc, onSnapshot } from 'firebase/firestore'
 import { create } from 'zustand'
-import { db } from '@/lib/firebase'
+import { supabase } from '@/lib/supabase'
 import type { Dress, HeroContent, HowItWorksContent, SizeGuideContent } from '@/types'
 
 interface CatalogState {
@@ -9,7 +8,7 @@ interface CatalogState {
   howItWorks: HowItWorksContent | null
   hero: HeroContent | null
   status: 'loading' | 'ready' | 'error'
-  /** True once each settings document has been read (even when it does not exist yet). */
+  /** True once the settings rows have been read (even when none exist yet). */
   settingsReady: boolean
 }
 
@@ -22,58 +21,63 @@ export const useCatalog = create<CatalogState>()(() => ({
   settingsReady: false,
 }))
 
-export function normalizeDress(id: string, d: Record<string, unknown>): Dress {
+/** Maps a snake_case database row to the app's Dress shape. */
+export function dressFromRow(r: Record<string, unknown>): Dress {
   const arr = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : [])
   return {
-    id,
-    name: String(d.name ?? 'Untitled dress'),
-    category: (d.category as Dress['category']) ?? 'Evening',
-    colorName: String(d.colorName ?? ''),
-    price: Number(d.price ?? 0),
-    deposit: Number(d.deposit ?? 0),
-    sizes: arr<string>(d.sizes),
-    description: String(d.description ?? ''),
-    details: arr<string>(d.details),
-    images: arr<Dress['images'][number]>(d.images),
-    status: d.status === 'unavailable' ? 'unavailable' : 'available',
-    bookedRanges: arr<Dress['bookedRanges'][number]>(d.bookedRanges),
-    featured: Boolean(d.featured),
-    createdAt: typeof d.createdAt === 'number' ? d.createdAt : 0,
+    id: String(r.id),
+    name: String(r.name ?? 'Untitled dress'),
+    category: (r.category as Dress['category']) ?? 'Evening',
+    colorName: String(r.color_name ?? ''),
+    price: Number(r.price ?? 0),
+    deposit: Number(r.deposit ?? 0),
+    sizes: arr<string>(r.sizes),
+    description: String(r.description ?? ''),
+    details: arr<string>(r.details),
+    images: arr<Dress['images'][number]>(r.images),
+    status: r.status === 'unavailable' ? 'unavailable' : 'available',
+    bookedRanges: arr<Dress['bookedRanges'][number]>(r.booked_ranges),
+    featured: Boolean(r.featured),
+    createdAt: r.created_at ? Date.parse(String(r.created_at)) : 0,
   }
+}
+
+async function load() {
+  if (!supabase) return
+  const [dresses, settings] = await Promise.all([
+    supabase.from('dresses').select('*').order('created_at', { ascending: true }),
+    supabase.from('settings').select('key, value'),
+  ])
+  if (dresses.error) {
+    useCatalog.setState({ status: 'error', settingsReady: true })
+    return
+  }
+  const next: Partial<CatalogState> = {
+    dresses: dresses.data.map(dressFromRow),
+    status: 'ready',
+    settingsReady: true,
+    sizeGuide: null,
+    howItWorks: null,
+    hero: null,
+  }
+  for (const row of settings.data ?? []) (next as Record<string, unknown>)[row.key] = row.value
+  useCatalog.setState(next)
 }
 
 let started = false
 
-/** Subscribes once to the dress collection and the editable site settings. */
+/** Loads the catalogue and site content once, then refreshes whenever an admin saves a change. */
 export function startCatalog() {
   if (started) return
   started = true
-  if (!db) {
+  if (!supabase) {
     useCatalog.setState({ status: 'ready', settingsReady: true })
     return
   }
-  const fail = () => useCatalog.setState({ status: 'error' })
-  onSnapshot(
-    collection(db, 'dresses'),
-    (snap) => {
-      const dresses = snap.docs
-        .map((x) => normalizeDress(x.id, x.data()))
-        .sort((a, b) => (a.createdAt ?? 0) - (b.createdAt ?? 0) || a.name.localeCompare(b.name))
-      useCatalog.setState({ dresses, status: 'ready' })
-    },
-    fail,
-  )
-  const seen = new Set<string>()
-  const setting = (key: 'sizeGuide' | 'howItWorks' | 'hero') =>
-    onSnapshot(
-      doc(db!, 'settings', key),
-      (s) => {
-        seen.add(key)
-        useCatalog.setState({ [key]: s.exists() ? s.data() : null, settingsReady: seen.size === 3 } as unknown as Partial<CatalogState>)
-      },
-      () => useCatalog.setState({ settingsReady: true }),
-    )
-  setting('sizeGuide')
-  setting('howItWorks')
-  setting('hero')
+  void load()
+  supabase
+    .channel('catalog')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'dresses' }, () => void load())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => void load())
+    .subscribe()
 }

@@ -7,7 +7,7 @@ import { NotConfigured } from '@/components/admin/AdminShell'
 import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Field'
-import { isFirebaseConfigured } from '@/lib/firebase'
+import { isSupabaseConfigured } from '@/lib/supabase'
 import { adminSignIn, startAdminAuth, useAdmin } from '@/stores/admin'
 
 const schema = z.object({ email: z.string().email('Enter your admin email.'), password: z.string().min(1, 'Enter your password.') })
@@ -33,7 +33,7 @@ export default function AdminLogin() {
         <p className="font-script-title text-3xl text-burgundy-soft">Renté by Kisha</p>
         <h1 className="text-5xl">Admin sign in</h1>
         <div className="mt-8">
-          {!isFirebaseConfigured ? (
+          {!isSupabaseConfigured ? (
             <NotConfigured />
           ) : (
             <form

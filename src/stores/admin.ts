@@ -1,6 +1,6 @@
-import { doc, getDoc } from 'firebase/firestore'
+import type { Session } from '@supabase/supabase-js'
 import { create } from 'zustand'
-import { app, db } from '@/lib/firebase'
+import { supabase } from '@/lib/supabase'
 
 interface AdminState {
   email: string | null
@@ -11,36 +11,34 @@ interface AdminState {
 
 export const useAdmin = create<AdminState>()(() => ({ email: null, uid: null, isAdmin: false, ready: false }))
 
+async function apply(session: Session | null) {
+  if (!session || !supabase) return useAdmin.setState({ email: null, uid: null, isAdmin: false, ready: true })
+  const { data } = await supabase.from('admins').select('user_id').eq('user_id', session.user.id).maybeSingle()
+  useAdmin.setState({ email: session.user.email ?? null, uid: session.user.id, isAdmin: !!data, ready: true })
+}
+
 let started: Promise<void> | null = null
 
-/** Loads Firebase Auth on demand (admin area only) and tracks the signed-in admin. */
+/** Tracks the signed-in admin. Safe to call from several components. */
 export function startAdminAuth() {
   if (started) return started
   started = (async () => {
-    if (!app || !db) {
-      useAdmin.setState({ ready: true })
-      return
-    }
-    const { getAuth, onAuthStateChanged } = await import('firebase/auth')
-    onAuthStateChanged(getAuth(app), async (u) => {
-      if (!u) return useAdmin.setState({ email: null, uid: null, isAdmin: false, ready: true })
-      const isAdmin = await getDoc(doc(db!, 'admins', u.uid))
-        .then((d) => d.exists())
-        .catch(() => false)
-      useAdmin.setState({ email: u.email, uid: u.uid, isAdmin, ready: true })
+    if (!supabase) return void useAdmin.setState({ ready: true })
+    await apply((await supabase.auth.getSession()).data.session)
+    // Deferred: calling Supabase inside this callback synchronously can deadlock the auth client.
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setTimeout(() => void apply(session), 0)
     })
   })()
   return started
 }
 
 export async function adminSignIn(email: string, password: string) {
-  if (!app) throw new Error('Firebase is not configured.')
-  const { getAuth, signInWithEmailAndPassword } = await import('firebase/auth')
-  await signInWithEmailAndPassword(getAuth(app), email, password)
+  if (!supabase) throw new Error('Supabase is not configured.')
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw new Error(error.message)
 }
 
 export async function adminSignOut() {
-  if (!app) return
-  const { getAuth, signOut } = await import('firebase/auth')
-  await signOut(getAuth(app))
+  await supabase?.auth.signOut()
 }

@@ -4,19 +4,19 @@ import { ArrowDown, ArrowUp, ExternalLink, LogOut, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Notice } from '@/components/common/States'
 import { ADMIN_NAV } from '@/constants/navigation'
-import { isFirebaseConfigured } from '@/lib/firebase'
+import { isSupabaseConfigured } from '@/lib/supabase'
 import { adminSignOut, startAdminAuth, useAdmin } from '@/stores/admin'
 import { cn } from '@/lib/utils'
 import Toaster from '@/components/layout/Toaster'
 
-/** Gate: only signed-in users listed in Firestore admins/{uid} may enter. */
+/** Gate: only signed-in users listed in the admins table may enter. */
 export function RequireAdmin() {
   const { ready, uid, isAdmin, email } = useAdmin()
   useEffect(() => {
     void startAdminAuth()
   }, [])
 
-  if (!isFirebaseConfigured) return <Navigate to="/admin/login" replace />
+  if (!isSupabaseConfigured) return <Navigate to="/admin/login" replace />
   if (!ready) return <p className="grid min-h-svh place-items-center text-muted">Checking your access…</p>
   if (!uid) return <Navigate to="/admin/login" replace />
   if (!isAdmin)
@@ -24,7 +24,7 @@ export function RequireAdmin() {
       <div className="mx-auto grid min-h-svh max-w-lg content-center gap-4 px-5 text-center">
         <h1 className="text-4xl">This account is not an admin</h1>
         <p className="text-muted">
-          {email} is signed in, but is not on the admin list. In the Firebase console, create a document in the <strong>admins</strong> collection whose ID is this user ID:
+          {email} is signed in, but is not on the admin list. Run <code>npm run seed:admin</code>, or add a row to the <strong>admins</strong> table whose user_id is:
         </p>
         <code className="break-all rounded-xl bg-blush-soft px-3 py-2 text-sm">{uid}</code>
         <Button variant="secondary" onClick={() => void adminSignOut()}>
@@ -85,7 +85,7 @@ export function AdminLayout() {
 export function NotConfigured() {
   return (
     <Notice tone="info">
-      Firebase is not configured yet. Copy <code>.env.example</code> to <code>.env</code>, fill in your project keys and restart the dev server.
+      Supabase is not configured yet. Copy <code>.env.example</code> to <code>.env</code>, add <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code>, and restart the dev server.
     </Notice>
   )
 }

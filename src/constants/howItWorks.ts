@@ -18,7 +18,7 @@ export const STEP_ICON_NAMES = Object.keys(STEP_ICONS) as StepIconName[]
 
 export const MAX_STEPS = 5
 
-/** Shown until an admin saves their own content in Firestore. */
+/** Shown until an admin saves their own content in Supabase. */
 export const DEFAULT_HOW_IT_WORKS: HowItWorksContent = {
   steps: [
     { icon: 'search', title: 'Choose a Dress', text: 'Browse the collection and pick your size.' },

@@ -12,7 +12,7 @@ import { Input, Select, Textarea } from '@/components/ui/Field'
 import { CATEGORIES, SIZE_PRESETS } from '@/constants/catalog'
 import { useDress } from '@/hooks/useDresses'
 import { deleteDress, deleteImages, newDressId, saveDress, uploadDressImage } from '@/lib/adminApi'
-import { isFirebaseConfigured } from '@/lib/firebase'
+import { isSupabaseConfigured } from '@/lib/supabase'
 import { cn, formatShort, move } from '@/lib/utils'
 import { useToastStore } from '@/stores'
 import type { Category, DateRange, Dress, DressImage } from '@/types'
@@ -34,7 +34,7 @@ export default function DressForm() {
   const { id } = useParams()
   const isNew = id === 'new'
   const { dress, loading } = useDress(isNew ? undefined : id)
-  if (!isFirebaseConfigured) return <NotConfigured />
+  if (!isSupabaseConfigured) return <NotConfigured />
   if (!isNew && loading) return <p className="text-muted">Loading…</p>
   if (!isNew && !dress)
     return (

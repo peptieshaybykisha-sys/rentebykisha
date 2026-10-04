@@ -122,7 +122,7 @@ export interface FittingAppointment {
   createdAt: string
 }
 
-/* ---------- Admin-editable site content (Firestore settings/*) ---------- */
+/* ---------- Admin-editable site content (Supabase settings table) ---------- */
 export interface SizeGuideContent {
   note: string
   columns: string[] // first column is the size label

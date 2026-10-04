@@ -1,45 +1,59 @@
-/** Admin-only writes to Firebase. Imported lazily from the admin area. */
-import { deleteDoc, doc, collection, setDoc } from 'firebase/firestore'
-import { deleteObject, getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { app, db } from './firebase'
+/** Admin-only writes to Supabase. Row level security rejects anyone who is not in the admins table. */
+import { PHOTO_BUCKET, supabase } from './supabase'
 import { imageToBlob } from './image'
 import type { Dress, DressImage } from '@/types'
 
-const needDb = () => {
-  if (!db) throw new Error('Firebase is not configured. Add your keys to .env and restart.')
-  return db
+const client = () => {
+  if (!supabase) throw new Error('Supabase is not configured. Add your keys to .env and restart.')
+  return supabase
 }
 
-export const newDressId = () => doc(collection(needDb(), 'dresses')).id
+const check = (error: { message: string } | null) => {
+  if (error) throw new Error(error.message)
+}
+
+export const newDressId = () => crypto.randomUUID()
 
 export async function saveDress(id: string, data: Omit<Dress, 'id' | 'createdAt'> & { createdAt?: number }) {
-  // Firestore rejects undefined, so strip it.
-  const clean = JSON.parse(JSON.stringify(data)) as Record<string, unknown>
-  clean.createdAt = data.createdAt || Date.now()
-  await setDoc(doc(needDb(), 'dresses', id), clean)
+  const row: Record<string, unknown> = {
+    id,
+    name: data.name,
+    category: data.category,
+    color_name: data.colorName,
+    price: data.price,
+    deposit: data.deposit,
+    description: data.description,
+    details: data.details,
+    sizes: data.sizes,
+    images: data.images,
+    status: data.status,
+    booked_ranges: data.bookedRanges,
+    featured: data.featured ?? false,
+  }
+  // Keep the original creation time when editing; new dresses get the database default.
+  if (data.createdAt) row.created_at = new Date(data.createdAt).toISOString()
+  check((await client().from('dresses').upsert(row)).error)
 }
 
 export async function uploadDressImage(dressId: string, file: File): Promise<DressImage> {
-  if (!app) throw new Error('Firebase is not configured.')
+  const sb = client()
   const blob = await imageToBlob(file)
   const safe = file.name.replace(/\.[^.]+$/, '').replace(/[^a-z0-9]+/gi, '-').slice(0, 40) || 'photo'
-  const path = `dresses/${dressId}/${Date.now()}-${safe}.jpg`
-  const r = ref(getStorage(app), path)
-  await uploadBytes(r, blob, { contentType: 'image/jpeg' })
-  return { url: await getDownloadURL(r), path, alt: '' }
+  const path = `${dressId}/${Date.now()}-${safe}.jpg`
+  check((await sb.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: 'image/jpeg' })).error)
+  return { url: sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl, path, alt: '' }
 }
 
 export async function deleteImages(paths: string[]) {
-  if (!app) return
-  const storage = getStorage(app)
-  await Promise.allSettled(paths.map((p) => deleteObject(ref(storage, p))))
+  if (!supabase || !paths.length) return
+  await supabase.storage.from(PHOTO_BUCKET).remove(paths)
 }
 
 export async function deleteDress(dress: Dress) {
   await deleteImages(dress.images.map((i) => i.path))
-  await deleteDoc(doc(needDb(), 'dresses', dress.id))
+  check((await client().from('dresses').delete().eq('id', dress.id)).error)
 }
 
-export async function saveSetting(key: 'sizeGuide' | 'howItWorks' | 'hero', data: object) {
-  await setDoc(doc(needDb(), 'settings', key), data)
+export async function saveSetting(key: 'sizeGuide' | 'howItWorks' | 'hero', value: object) {
+  check((await client().from('settings').upsert({ key, value, updated_at: new Date().toISOString() })).error)
 }

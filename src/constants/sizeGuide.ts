@@ -1,6 +1,6 @@
 import type { SizeGuideContent } from '@/types'
 
-/** Shown until an admin saves their own size guide in Firestore. */
+/** Shown until an admin saves their own size guide in Supabase. */
 export const DEFAULT_SIZE_GUIDE: SizeGuideContent = {
   note: 'Measurements are body measurements in centimetres. If you are between sizes, choose the larger one or book a fitting.',
   columns: ['Size', 'Bust', 'Waist', 'Hips'],

@@ -10,7 +10,7 @@ import { DEFAULT_HOW_IT_WORKS, MAX_STEPS, STEP_ICON_NAMES, STEP_ICONS } from '@/
 import { DEFAULT_SIZE_GUIDE } from '@/constants/sizeGuide'
 import { useDressList } from '@/hooks/useDresses'
 import { saveSetting } from '@/lib/adminApi'
-import { isFirebaseConfigured } from '@/lib/firebase'
+import { isSupabaseConfigured } from '@/lib/supabase'
 import { move } from '@/lib/utils'
 import { useToastStore } from '@/stores'
 import { useCatalog } from '@/stores/catalog'
@@ -58,7 +58,7 @@ function EditorFrame({ title, intro, children, onSave, onReset }: { title: strin
 
 function useReadyGuard() {
   const ready = useCatalog((s) => s.settingsReady)
-  return { ready, configured: isFirebaseConfigured }
+  return { ready, configured: isSupabaseConfigured }
 }
 
 /* ---------------- Size guide ---------------- */

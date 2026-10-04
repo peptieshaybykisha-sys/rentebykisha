@@ -20,7 +20,7 @@ export default function DressList() {
         </ButtonLink>
       </div>
 
-      {status === 'error' && <p role="alert" className="mb-4 rounded-2xl bg-red-50 p-4 text-red-900">We could not load the dresses. Check your Firestore rules and connection.</p>}
+      {status === 'error' && <p role="alert" className="mb-4 rounded-2xl bg-red-50 p-4 text-red-900">We could not load the dresses. Check that the database migration was run and your connection.</p>}
 
       {dresses.length === 0 && status === 'ready' ? (
         <div className="rounded-3xl border border-dashed border-blush p-10 text-center">
