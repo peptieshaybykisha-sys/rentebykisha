@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import Container, { PageTitle } from '@/components/common/Container'
 import DressCard from '@/components/dresses/DressCard'
-import { CATEGORIES, OCCASION_BLURBS, dresses } from '@/data/dresses'
+import { CATEGORIES, OCCASION_BLURBS } from '@/data/dresses'
+import { useDressList } from '@/hooks/useDresses'
 
 export default function Collections() {
+  const dresses = useDressList()
   return (
     <Container className="pb-8">
       <PageTitle script="The lookbook" title="Collections">

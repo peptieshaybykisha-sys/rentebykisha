@@ -1,16 +1,15 @@
 import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
-import DressArt from '@/components/dresses/DressArt'
+import DressPhoto from '@/components/dresses/DressPhoto'
 import StatusBadge from '@/components/ui/StatusBadge'
-import { dresses } from '@/data/dresses'
+import { useDressLookup } from '@/hooks/useDresses'
 import { STATUS_FLOW } from '@/lib/status'
 import { cn, formatLong, formatPeso, formatRange } from '@/lib/utils'
 import type { Rental } from '@/types'
 
-const artFor = (id: string) => dresses.find((d) => d.id === id)
-
 /** Compact row used in My Rentals and the account page. */
 export function RentalCard({ rental }: { rental: Rental }) {
+  const artFor = useDressLookup()
   const first = rental.items[0]
   const dress = artFor(first.dressId)
   const more = rental.items.length - 1
@@ -19,7 +18,7 @@ export function RentalCard({ rental }: { rental: Rental }) {
   return (
     <article className="flex gap-4 rounded-[1.75rem] border border-line bg-ivory p-4 sm:gap-6 sm:p-5">
       <div className="hidden w-24 shrink-0 overflow-hidden rounded-2xl bg-blush-soft sm:block">
-        <div className="aspect-[3/4]">{dress && <DressArt dress={dress} view="front" className="size-full" />}</div>
+        <div className="aspect-[3/4]">{dress && <DressPhoto dress={dress} className="size-full object-cover" />}</div>
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -43,6 +42,7 @@ export function RentalCard({ rental }: { rental: Rental }) {
 }
 
 export function RentalSummary({ rental }: { rental: Rental }) {
+  const artFor = useDressLookup()
   const { totals } = rental
   return (
     <div className="space-y-8">
@@ -56,7 +56,7 @@ export function RentalSummary({ rental }: { rental: Rental }) {
             return (
               <li key={it.dressId} className="flex items-center gap-4 p-3 sm:p-4">
                 <div className="w-14 shrink-0 overflow-hidden rounded-xl bg-blush-soft">
-                  <div className="aspect-[3/4]">{dress && <DressArt dress={dress} bare className="size-full" />}</div>
+                  <div className="aspect-[3/4]">{dress && <DressPhoto dress={dress} className="size-full object-cover" />}</div>
                 </div>
                 <div className="min-w-0 flex-1">
                   <Link to={`/dresses/${it.dressId}`} className="font-serif text-2xl leading-tight text-burgundy">

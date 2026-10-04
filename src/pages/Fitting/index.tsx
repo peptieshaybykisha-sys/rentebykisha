@@ -10,7 +10,7 @@ import Container from '@/components/common/Container'
 import { Notice } from '@/components/common/States'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Input, Select } from '@/components/ui/Field'
-import { dresses } from '@/data/dresses'
+import { useDressList } from '@/hooks/useDresses'
 import { bookFitting, bookedSlots } from '@/lib/api'
 import { STUDIO } from '@/lib/config'
 import { phoneSchema } from '@/lib/validation'
@@ -33,6 +33,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>
 
 export default function Fitting() {
+  const dresses = useDressList()
   const user = useAuthStore((s) => s.user)
   useMockDb((s) => s.fittings) // re-render when slots change
   const [booked, setBooked] = useState<FittingAppointment | null>(null)

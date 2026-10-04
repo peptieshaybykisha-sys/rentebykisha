@@ -1,14 +1,11 @@
 export type Category = 'Evening' | 'Formal' | 'Cocktail' | 'Bridal' | 'Prom' | 'Events'
-export type Size = 'XS' | 'S' | 'M' | 'L' | 'XL'
+/** Sizes are free text so each dress can use its own labels (XS, 8, Free size...). */
+export type Size = string
 
-export type Silhouette = 'ballgown' | 'mermaid' | 'aline' | 'column' | 'mini' | 'sleeved'
-export type Texture = 'satin' | 'sequin' | 'lace' | 'tulle' | 'velvet' | 'chiffon'
-
-/** A dress image. With a real backend `src` is set; with mock data the image is drawn from `art`. */
 export interface DressImage {
-  src?: string
+  url: string
+  path: string // Storage path, used when deleting
   alt: string
-  view: 'front' | 'bodice' | 'hem' | 'studio'
 }
 
 export interface DateRange {
@@ -27,10 +24,10 @@ export interface Dress {
   description: string
   details: string[]
   images: DressImage[]
-  art: { color: string; silhouette: Silhouette; texture: Texture; accent?: string }
   status: 'available' | 'unavailable'
   bookedRanges: DateRange[]
   featured?: boolean
+  createdAt?: number
 }
 
 export interface CartItem {
@@ -122,4 +119,22 @@ export interface FittingAppointment {
   time: string
   dressId?: string
   createdAt: string
+}
+
+/* ---------- Admin-editable site content (Firestore settings/*) ---------- */
+export interface SizeGuideContent {
+  note: string
+  columns: string[] // first column is the size label
+  rows: string[][]
+}
+
+export type StepIconName = 'search' | 'calendar' | 'wallet' | 'sparkles' | 'package' | 'truck' | 'heart' | 'shirt' | 'camera' | 'message'
+
+export interface HowItWorksContent {
+  steps: { icon: StepIconName; title: string; text: string }[]
+  faq: { q: string; a: string }[]
+}
+
+export interface HeroContent {
+  dressIds: string[] // first one is the centre piece
 }

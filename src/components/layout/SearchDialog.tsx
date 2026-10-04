@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import Dialog from '@/components/ui/Dialog'
-import DressArt from '@/components/dresses/DressArt'
+import DressPhoto from '@/components/dresses/DressPhoto'
 import { useDresses } from '@/hooks/useDresses'
 import { formatPeso } from '@/lib/utils'
 
@@ -42,7 +42,7 @@ export default function SearchDialog({ open, onClose }: { open: boolean; onClose
           <li key={d.id}>
             <Link to={`/dresses/${d.id}`} onClick={onClose} className="flex items-center gap-4 rounded-2xl p-2 hover:bg-blush-soft">
               <span className="block h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-blush-soft">
-                <DressArt dress={d} bare className="size-full" />
+                <DressPhoto dress={d} className="size-full object-cover" />
               </span>
               <span className="flex-1">
                 <span className="block font-serif text-xl leading-tight text-burgundy">{d.name}</span>

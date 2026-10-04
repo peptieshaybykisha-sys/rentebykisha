@@ -6,11 +6,12 @@ import Container from '@/components/common/Container'
 import { EmptyState } from '@/components/common/States'
 import HowItWorksSteps from '@/components/common/HowItWorksSteps'
 import CategoryTabs, { type CategoryFilter } from '@/components/dresses/CategoryTabs'
-import DressArt from '@/components/dresses/DressArt'
+import DressPhoto from '@/components/dresses/DressPhoto'
 import DressCard from '@/components/dresses/DressCard'
 import DressGrid from '@/components/dresses/DressGrid'
 import { ButtonLink } from '@/components/ui/Button'
-import { CATEGORIES, OCCASION_BLURBS, dresses } from '@/data/dresses'
+import { CATEGORIES, OCCASION_BLURBS } from '@/data/dresses'
+import { useDressList } from '@/hooks/useDresses'
 import { useDresses } from '@/hooks/useDresses'
 import { cn } from '@/lib/utils'
 import type { Category } from '@/types'
@@ -40,8 +41,9 @@ export function CollectionSection() {
 }
 
 export function OccasionSection() {
+  const dresses = useDressList()
   const [active, setActive] = useState<Category>('Evening')
-  const sample = dresses.find((d) => d.category === active && d.status === 'available') ?? dresses[0]
+  const sample = dresses.find((d) => d.category === active && d.images.length && d.status === 'available') ?? dresses.find((d) => d.images.length)
   return (
     <section aria-labelledby="occasion-title" className="mt-24 bg-blush-soft/60 py-20 sm:py-28">
       <Container className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
@@ -78,9 +80,9 @@ export function OccasionSection() {
         <div className="relative mx-auto hidden aspect-[4/5] w-full max-w-md lg:block" aria-hidden>
           <div className="absolute inset-0 overflow-hidden rounded-t-[999px] rounded-b-3xl border border-gold/50 bg-cream shadow-soft">
             <AnimatePresence mode="wait">
-              <motion.div key={sample.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }} className="size-full">
-                <DressArt dress={sample} view="studio" className="size-full" />
-              </motion.div>
+              {sample && <motion.div key={sample.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }} className="size-full">
+                <DressPhoto dress={sample} className="size-full object-cover" />
+              </motion.div>}
             </AnimatePresence>
           </div>
         </div>
@@ -90,6 +92,7 @@ export function OccasionSection() {
 }
 
 export function FeaturedSection() {
+  const dresses = useDressList()
   const featured = dresses.filter((d) => d.featured)
   return (
     <section aria-labelledby="featured-title" className="pt-24">
@@ -118,7 +121,8 @@ export function FeaturedSection() {
 }
 
 export function FittingCta() {
-  const dress = dresses.find((d) => d.id === 'dress-004')!
+  const dresses = useDressList()
+  const dress = dresses.find((d) => d.featured && d.images.length) ?? dresses.find((d) => d.images.length)
   return (
     <section aria-labelledby="fitting-title" className="mt-24">
       <Container>
@@ -136,7 +140,7 @@ export function FittingCta() {
             </ButtonLink>
           </div>
           <div className="relative hidden h-full min-h-[20rem] bg-blush-soft md:block" aria-hidden>
-            <DressArt dress={dress} view="studio" className="absolute inset-0 size-full" />
+            {dress && <DressPhoto dress={dress} className="absolute inset-0 size-full object-cover" />}
           </div>
         </div>
       </Container>

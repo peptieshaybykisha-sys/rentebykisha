@@ -10,7 +10,7 @@ import { GCASH, STUDIO } from '@/lib/config'
 import { receiptToDataUrl } from '@/lib/image'
 import { customerSchema } from '@/lib/validation'
 import { cn, formatPeso, formatRange } from '@/lib/utils'
-import { getDress } from '@/hooks/useDresses'
+import { useDressLookup } from '@/hooks/useDresses'
 import { DELIVERY_FEE } from '@/lib/pricing'
 import type { CartItem, CustomerInfo, Fulfillment } from '@/types'
 
@@ -95,6 +95,7 @@ export function DetailsStep({
     formState: { errors },
   } = useForm<DetailsValues>({ resolver: zodResolver(detailsSchema), defaultValues: defaults })
   const fulfillment = watch('fulfillment')
+  const getDress = useDressLookup()
 
   const options: { value: Fulfillment; title: string; text: string; icon: typeof Truck }[] = [
     { value: 'delivery', title: 'Delivery', text: `${formatPeso(DELIVERY_FEE)} · Metro Manila`, icon: Truck },

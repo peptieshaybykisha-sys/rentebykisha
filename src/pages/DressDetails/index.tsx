@@ -10,7 +10,7 @@ import RentalDatePicker from '@/components/dresses/RentalDatePicker'
 import SizeGuide from '@/components/dresses/SizeGuide'
 import WishlistButton from '@/components/dresses/WishlistButton'
 import { Button, ButtonLink } from '@/components/ui/Button'
-import { getDress } from '@/hooks/useDresses'
+import { useDress } from '@/hooks/useDresses'
 import { checkAvailability } from '@/lib/availability'
 import { rentalDays, rentalFee } from '@/lib/pricing'
 import { cn, formatPeso } from '@/lib/utils'
@@ -19,7 +19,8 @@ import type { Dress, Size } from '@/types'
 
 export default function DressDetails() {
   const { id } = useParams()
-  const dress = id ? getDress(id) : undefined
+  const { dress, loading } = useDress(id)
+  if (loading) return <div className="min-h-[70svh]" aria-busy="true" aria-label="Loading dress" />
   if (!dress)
     return (
       <ErrorState title="We could not find that dress" to="/dresses" cta="Browse the collection">
@@ -83,13 +84,13 @@ function DressView({ dress }: { dress: Dress }) {
             </AnimatePresence>
             <WishlistButton dressId={dress.id} name={dress.name} className="absolute right-4 top-4 z-10" />
           </div>
-          <ul className="flex gap-3 lg:flex-col" aria-label="Dress photos">
+          <ul className={cn("flex gap-3 lg:flex-col", dress.images.length < 2 && "hidden")} aria-label="Dress photos">
             {dress.images.map((img, i) => (
-              <li key={img.view} className="w-1/4 lg:w-20">
+              <li key={img.path} className="w-1/4 lg:w-20">
                 <button
                   type="button"
                   onClick={() => setImgIndex(i)}
-                  aria-label={`Show photo ${i + 1}: ${img.alt}`}
+                  aria-label={`Show photo ${i + 1}`}
                   aria-current={i === imgIndex}
                   className={cn(
                     'block aspect-[3/4] w-full overflow-hidden rounded-xl bg-blush-soft ring-offset-2 ring-offset-cream transition',

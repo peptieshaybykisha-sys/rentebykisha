@@ -5,7 +5,7 @@ import OrderSummary from '@/components/cart/OrderSummary'
 import Container, { PageTitle } from '@/components/common/Container'
 import { EmptyState, Notice } from '@/components/common/States'
 import { ButtonLink } from '@/components/ui/Button'
-import { getDress } from '@/hooks/useDresses'
+import { useDressLookup } from '@/hooks/useDresses'
 import { checkAvailability } from '@/lib/availability'
 import { DELIVERY_FEE, computeTotals } from '@/lib/pricing'
 import { formatPeso } from '@/lib/utils'
@@ -13,6 +13,7 @@ import { useCartStore } from '@/stores'
 
 export default function Cart() {
   const items = useCartStore((s) => s.items)
+  const getDress = useDressLookup()
   const entries = items.flatMap((item) => {
     const dress = getDress(item.dressId)
     return dress ? [{ item, dress }] : []

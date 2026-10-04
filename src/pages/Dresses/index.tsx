@@ -5,17 +5,15 @@ import { EmptyState } from '@/components/common/States'
 import CategoryTabs, { type CategoryFilter } from '@/components/dresses/CategoryTabs'
 import DressGrid from '@/components/dresses/DressGrid'
 import { CATEGORIES } from '@/data/dresses'
-import { useDresses } from '@/hooks/useDresses'
-import type { Size } from '@/types'
-
-const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL']
+import { useDressList, useDresses } from '@/hooks/useDresses'
 
 export default function Dresses() {
   const [params, setParams] = useSearchParams()
+  const SIZES = [...new Set(useDressList().flatMap((d) => d.sizes))]
   const rawCat = params.get('category') ?? 'All'
   const category = (CATEGORIES as string[]).includes(rawCat) ? (rawCat as CategoryFilter) : 'All'
   const q = params.get('q') ?? ''
-  const size = (params.get('size') ?? '') as Size | ''
+  const size = (params.get('size') ?? '') 
   const availableOnly = params.get('available') === '1'
 
   const set = (key: string, value: string) =>

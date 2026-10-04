@@ -2,10 +2,11 @@ import { Heart } from 'lucide-react'
 import Container, { PageTitle } from '@/components/common/Container'
 import { EmptyState } from '@/components/common/States'
 import DressGrid from '@/components/dresses/DressGrid'
-import { dresses } from '@/data/dresses'
+import { useDressList } from '@/hooks/useDresses'
 import { useWishlistStore } from '@/stores'
 
 export default function Wishlist() {
+  const dresses = useDressList()
   const ids = useWishlistStore((s) => s.ids)
   const saved = dresses.filter((d) => ids.includes(d.id))
   return (

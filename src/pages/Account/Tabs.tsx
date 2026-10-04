@@ -8,7 +8,7 @@ import DressGrid from '@/components/dresses/DressGrid'
 import { RentalCard } from '@/components/rentals/RentalParts'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Field'
-import { dresses } from '@/data/dresses'
+import { useDressList } from '@/hooks/useDresses'
 import { cancelFitting, removeAddress, saveAddress, updateProfile } from '@/lib/api'
 import { phoneSchema } from '@/lib/validation'
 import { formatLong } from '@/lib/utils'
@@ -67,6 +67,7 @@ export function RentalsTab() {
 
 /* ---------- Wishlist ---------- */
 export function WishlistTab() {
+  const dresses = useDressList()
   const ids = useWishlistStore((s) => s.ids)
   const saved = dresses.filter((d) => ids.includes(d.id))
   if (!saved.length) return <EmptyState icon={Heart} title="Your saved dresses are waiting for you." to="/dresses" cta="Explore the collection" className="py-10" />
@@ -75,6 +76,7 @@ export function WishlistTab() {
 
 /* ---------- Fittings ---------- */
 export function FittingsTab() {
+  const dresses = useDressList()
   const user = useAuthStore((s) => s.user)!
   const fittings = useMockDb((s) => s.fittings)
     .filter((f) => f.userId === user.id)

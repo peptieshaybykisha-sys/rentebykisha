@@ -1,17 +1,22 @@
+import { Shirt } from 'lucide-react'
 import type { Dress } from '@/types'
-import DressArt from './DressArt'
+import { cn } from '@/lib/utils'
 
 interface Props {
-  dress: Dress
+  dress: Pick<Dress, 'images' | 'name'>
   index?: number
   className?: string
   priority?: boolean
 }
 
-/** Renders a real photo when `src` exists, otherwise the vector shoot. */
+/** The dress photo uploaded by the admin, or a quiet placeholder when none exists yet. */
 export default function DressPhoto({ dress, index = 0, className, priority }: Props) {
   const img = dress.images[index] ?? dress.images[0]
-  if (img.src)
-    return <img src={img.src} alt={img.alt} loading={priority ? 'eager' : 'lazy'} decoding="async" className={className} />
-  return <DressArt dress={dress} view={img.view} title={img.alt} className={className} />
+  if (!img)
+    return (
+      <div role="img" aria-label={`${dress.name} (photo coming soon)`} className={cn('grid place-items-center bg-gradient-to-b from-blush-soft to-cream text-blush', className)}>
+        <Shirt className="size-1/4 max-w-12" strokeWidth={1} aria-hidden />
+      </div>
+    )
+  return <img src={img.url} alt={img.alt || dress.name} loading={priority ? 'eager' : 'lazy'} decoding="async" className={className} />
 }

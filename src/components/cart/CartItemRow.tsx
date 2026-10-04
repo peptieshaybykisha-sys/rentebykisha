@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { CalendarDays, Trash2 } from 'lucide-react'
-import DressArt from '@/components/dresses/DressArt'
+import DressPhoto from '@/components/dresses/DressPhoto'
 import RentalDatePicker from '@/components/dresses/RentalDatePicker'
 import { Button } from '@/components/ui/Button'
 import Dialog from '@/components/ui/Dialog'
@@ -36,7 +36,7 @@ export default function CartItemRow({ item, dress }: { item: CartItem; dress: Dr
       <div className="flex gap-4 sm:gap-6">
         <Link to={`/dresses/${dress.id}`} className="block w-24 shrink-0 overflow-hidden rounded-2xl bg-blush-soft sm:w-32" aria-label={`View ${dress.name}`}>
           <div className="aspect-[3/4]">
-            <DressArt dress={dress} view="front" className="size-full" />
+            <DressPhoto dress={dress} className="size-full object-cover" />
           </div>
         </Link>
         <div className="min-w-0 flex-1">

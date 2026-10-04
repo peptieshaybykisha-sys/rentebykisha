@@ -6,7 +6,7 @@ import OrderSummary from '@/components/cart/OrderSummary'
 import { CustomerStep, DetailsStep, PaymentStep, Stepper } from '@/components/checkout/CheckoutSteps'
 import Container, { PageTitle } from '@/components/common/Container'
 import { EmptyState, Notice } from '@/components/common/States'
-import { getDress } from '@/hooks/useDresses'
+import { useDressLookup } from '@/hooks/useDresses'
 import { createRental } from '@/lib/api'
 import { checkAvailability } from '@/lib/availability'
 import { computeTotals } from '@/lib/pricing'
@@ -17,6 +17,7 @@ export default function Checkout() {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)!
   const items = useCartStore((s) => s.items)
+  const getDress = useDressLookup()
   const clearCart = useCartStore((s) => s.clear)
   const draft = useCheckoutStore()
   const resetDraft = useCheckoutStore((s) => s.reset)

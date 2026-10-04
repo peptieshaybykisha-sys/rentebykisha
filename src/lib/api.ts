@@ -2,13 +2,13 @@
  * Mock API layer. Every function is async and returns plain data, so a real
  * backend can replace the bodies without touching any UI code.
  */
-import { addDays, format } from 'date-fns'
+import { format } from 'date-fns'
 import { getDress } from '@/hooks/useDresses'
 import { useAuthStore, useMockDb } from '@/stores'
 import type { Address, CartItem, CustomerInfo, FittingAppointment, Fulfillment, Rental, RentalStatus, User } from '@/types'
 import { checkAvailability } from './availability'
 import { computeTotals, rentalFee } from './pricing'
-import { fromISODate, sleep, toISODate } from './utils'
+import { sleep } from './utils'
 import { STATUS_FLOW } from './status'
 
 export class ApiError extends Error {}
@@ -173,34 +173,11 @@ export function removeAddress(userId: string, id: string) {
 /* ---------------- seed ---------------- */
 export const DEMO_LOGIN = { email: 'demo@rente.ph', password: 'password123' }
 
-/** Creates the demo account (with two past rentals) the first time the app runs. */
+/** Creates the demo customer account the first time the app runs. */
 export function seedDemo() {
   if (db().users.some((u) => u.email === DEMO_LOGIN.email)) return
-  const id = 'user-demo'
   const customer = { name: 'Kisha Demo', email: DEMO_LOGIN.email, phone: '0917 123 4567' }
-  const mk = (n: number, dressId: string, from: number, len: number, status: RentalStatus, size: 'S' | 'M'): Rental => {
-    const d = getDress(dressId)!
-    const start = toISODate(addDays(new Date(), from))
-    const end = toISODate(addDays(fromISODate(start), len - 1))
-    const fee = rentalFee(d, start, end)
-    const created = addDays(new Date(), Math.min(from, 0) - 6).toISOString()
-    return {
-      id: `REN-${format(addDays(new Date(), Math.min(from, 0) - 6), 'yyyyMMdd')}-00${n}`,
-      userId: id,
-      createdAt: created,
-      items: [{ dressId, name: d.name, category: d.category, size, startDate: start, endDate: end, rentalFee: fee, deposit: d.deposit }],
-      customer,
-      fulfillment: 'pickup',
-      totals: { rentalFee: fee, deposit: d.deposit, delivery: 0, total: fee + d.deposit },
-      paymentStatus: status === 'Completed' ? 'Deposit Refunded' : 'Verified',
-      status,
-      history: [{ status: 'Payment Verification', at: created }, { status, at: created }],
-    }
-  }
-  useMockDb.setState((s) => ({
-    users: [...s.users, { id, ...customer, password: DEMO_LOGIN.password }],
-    rentals: [...s.rentals, mk(1, 'dress-001', 24, 3, 'Confirmed', 'M'), mk(2, 'dress-003', -20, 2, 'Completed', 'S')],
-  }))
+  useMockDb.setState((s) => ({ users: [...s.users, { id: 'user-demo', ...customer, password: DEMO_LOGIN.password }] }))
 }
 
 export const currentUser = () => useAuthStore.getState().user
