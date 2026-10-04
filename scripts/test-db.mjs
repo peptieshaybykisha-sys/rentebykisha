@@ -10,9 +10,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { PGlite } from '@electric-sql/pglite'
 import { btree_gist } from '@electric-sql/pglite/contrib/btree_gist'
 
-const db = new PGlite({ extensions: { btree_gist } })
-
-await db.exec(`
+const STUBS = `
   create role anon; create role authenticated;
   create schema auth; create schema storage; create schema extensions;
   create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}');
@@ -25,7 +23,10 @@ await db.exec(`
   grant usage on schema public, auth, storage, extensions to anon, authenticated;
   alter default privileges in schema public grant all on tables to anon, authenticated;
   grant all on all tables in schema storage to anon, authenticated;
-`)
+`
+
+const db = new PGlite({ extensions: { btree_gist } })
+await db.exec(STUBS)
 
 for (const f of readdirSync('supabase/migrations').sort()) {
   await db.exec(readFileSync(`supabase/migrations/${f}`, 'utf8'))
@@ -39,7 +40,7 @@ const BEN = '33333333-3333-3333-3333-333333333333'
 await db.exec(`
   insert into auth.users (id, email, raw_user_meta_data) values
     ('${ADMIN}', 'admin@x.com', '{}'), ('${ANA}', 'ana@x.com', '{"name":"Ana","phone":"09171234567"}'), ('${BEN}', 'ben@x.com', '{}');
-  insert into public.admins values ('${ADMIN}', 'admin@x.com');
+  update public.profiles set role = 'admin' where id = '${ADMIN}';
 `)
 
 let failures = 0
@@ -67,6 +68,21 @@ await db.query(`insert into public.dresses (name, category, price, deposit, size
 const AWAY = (await db.query(`select id from public.dresses where name = 'Away'`)).rows[0].id
 await db.query(`insert into public.dresses (name, category, price, deposit, sizes, booked_ranges) values ('Blocked','Prom',500,500,'{M}', $1)`, [JSON.stringify([{ start: day(20), end: day(22) }])])
 const BLOCKED = (await db.query(`select id from public.dresses where name = 'Blocked'`)).rows[0].id
+
+// ---- roles
+expect('new accounts default to customer', (await db.query(`select role from public.profiles where id = '${ANA}'`)).rows[0].role === 'customer')
+expect('the old admins table is gone', (await db.query(`select to_regclass('public.admins') as t`)).rows[0].t === null)
+expect('customer cannot promote themselves by editing the role column', !(await run('authenticated', ANA, `update public.profiles set role = 'admin' where id = '${ANA}'`)).ok)
+expect('customer cannot promote themselves through set_user_role', !(await run('authenticated', ANA, `select public.set_user_role('${ANA}', 'admin')`)).ok)
+expect('anonymous cannot call set_user_role', !(await run('anon', '', `select public.set_user_role('${ANA}', 'admin')`)).ok)
+expect('admin can read every profile', (await run('authenticated', ADMIN, 'select id from public.profiles')).rows.length === 3)
+expect('admin cannot demote themselves', (await run('authenticated', ADMIN, `select public.set_user_role('${ADMIN}', 'customer')`)).error?.includes('own admin'))
+expect('admin rejects unknown roles', (await run('authenticated', ADMIN, `select public.set_user_role('${BEN}', 'superuser')`)).error?.includes('Unknown role'))
+expect('admin can promote another user', (await run('authenticated', ADMIN, `select public.set_user_role('${BEN}', 'admin')`)).ok)
+const dressSql = `insert into public.dresses (name, category, price, deposit, sizes) values ('By Ben','Prom',1,1,'{M}')`
+expect('the promoted user can now write dresses', (await run('authenticated', BEN, dressSql)).count === 1)
+expect('admin can demote another user and they lose access', (await run('authenticated', ADMIN, `select public.set_user_role('${BEN}', 'customer')`)).ok && !(await run('authenticated', BEN, dressSql)).ok)
+await db.query(`delete from public.dresses where name = 'By Ben'`)
 
 // ---- profiles
 expect('profile is created automatically with name and phone', (await db.query(`select name, phone from public.profiles where id = '${ANA}'`)).rows[0]?.name === 'Ana')
@@ -152,6 +168,21 @@ expect('customer cannot upload into another folder', !(await run('authenticated'
 expect('customer cannot read another customer\'s receipt', (await run('authenticated', BEN, `select * from storage.objects where bucket_id = 'receipts'`)).rows.length === 0)
 expect('admin can read every receipt', (await run('authenticated', ADMIN, `select * from storage.objects where bucket_id = 'receipts'`)).rows.length === 1)
 expect('non-admin cannot upload dress photos', !(await run('authenticated', ANA, `insert into storage.objects (bucket_id, name) values ('dresses', 'x/a.jpg')`)).ok)
+
+
+// ---- upgrade path: a project that already ran 0001 + 0002 with a row in the old admins table
+{
+  const old = new PGlite({ extensions: { btree_gist } })
+  await old.exec(STUBS)
+  await old.exec(readFileSync('supabase/migrations/0001_init.sql', 'utf8'))
+  await old.exec(readFileSync('supabase/migrations/0002_customers.sql', 'utf8'))
+  await old.exec(`insert into auth.users (id, email) values ('${ADMIN}', 'admin@x.com'), ('${ANA}', 'ana@x.com');
+    insert into public.admins values ('${ADMIN}', 'admin@x.com');`)
+  await old.exec(readFileSync('supabase/migrations/0003_roles.sql', 'utf8'))
+  const roles = (await old.query('select id, role from public.profiles order by email')).rows
+  expect('upgrade: the existing admin keeps admin access', roles.find((r) => r.id === ADMIN)?.role === 'admin')
+  expect('upgrade: everyone else becomes a customer', roles.find((r) => r.id === ANA)?.role === 'customer')
+}
 
 console.log(failures ? `\n${failures} check(s) failed` : '\nAll database checks passed')
 process.exit(failures ? 1 : 0)
