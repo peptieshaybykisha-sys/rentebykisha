@@ -1,7 +1,8 @@
-import { lazy } from 'react'
+import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import Home from '@/pages/Home'
+import { AdminLayout, RequireAdmin } from '@/components/admin/AdminShell'
 import RequireAuth from './RequireAuth'
 
 const Dresses = lazy(() => import('@/pages/Dresses'))
@@ -19,11 +20,28 @@ const RentalDetail = lazy(() => import('@/pages/Rentals/RentalDetail'))
 const Wishlist = lazy(() => import('@/pages/Wishlist'))
 const Fitting = lazy(() => import('@/pages/Fitting'))
 const HowItWorks = lazy(() => import('@/pages/HowItWorks'))
+const AdminLogin = lazy(() => import('@/pages/Admin/AdminLogin'))
+const DressList = lazy(() => import('@/pages/Admin/DressList'))
+const DressForm = lazy(() => import('@/pages/Admin/DressForm'))
+const SizeGuideEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.SizeGuideEditor })))
+const HeroEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.HeroEditor })))
+const HowItWorksEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.HowItWorksEditor })))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 export default function AppRoutes() {
   return (
+    <Suspense fallback={null}>
     <Routes>
+      <Route path="admin/login" element={<AdminLogin />} />
+      <Route path="admin" element={<RequireAdmin />}>
+        <Route element={<AdminLayout />}>
+          <Route index element={<DressList />} />
+          <Route path="dresses/:id" element={<DressForm />} />
+          <Route path="hero" element={<HeroEditor />} />
+          <Route path="size-guide" element={<SizeGuideEditor />} />
+          <Route path="how-it-works" element={<HowItWorksEditor />} />
+        </Route>
+      </Route>
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="dresses" element={<Dresses />} />
@@ -46,5 +64,6 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+    </Suspense>
   )
 }

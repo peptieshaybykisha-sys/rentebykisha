@@ -27,3 +27,10 @@ export function shade(hex: string, amt: number) {
   const b = c(n & 255)
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`
 }
+
+export function move<T>(list: T[], from: number, to: number): T[] {
+  const next = [...list]
+  const [item] = next.splice(from, 1)
+  next.splice(to, 0, item)
+  return next
+}

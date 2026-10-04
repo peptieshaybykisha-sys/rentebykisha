@@ -28,3 +28,27 @@ export async function receiptToDataUrl(file: File, maxDim = 900, quality = 0.72)
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
   return canvas.toDataURL('image/jpeg', quality)
 }
+
+/** Resizes a dress photo before upload so pages stay fast. */
+export async function imageToBlob(file: File, maxDim = 1600, quality = 0.84): Promise<Blob> {
+  if (!file.type.startsWith('image/')) throw new Error('Please choose an image file.')
+  const url = URL.createObjectURL(file)
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image()
+      i.onload = () => resolve(i)
+      i.onerror = () => reject(new Error('That file does not look like a valid image.'))
+      i.src = url
+    })
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(img.width * scale)
+    canvas.height = Math.round(img.height * scale)
+    canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+    return await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not process that image.'))), 'image/jpeg', quality),
+    )
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
