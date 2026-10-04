@@ -8,6 +8,7 @@ import Container, { PageTitle } from '@/components/common/Container'
 import { EmptyState, Notice } from '@/components/common/States'
 import { useDressLookup } from '@/hooks/useDresses'
 import { createRental } from '@/lib/api'
+import { refreshCatalog } from '@/stores/catalog'
 import { checkAvailability } from '@/lib/availability'
 import { computeTotals } from '@/lib/pricing'
 import { formatPeso } from '@/lib/utils'
@@ -59,7 +60,7 @@ export default function Checkout() {
     setSubmitting(true)
     setError('')
     try {
-      const rental = await createRental({
+      const rentalId = await createRental({
         userId: user.id,
         items,
         customer: draft.customer,
@@ -68,11 +69,12 @@ export default function Checkout() {
         notes: draft.notes.trim() || undefined,
         receipt,
       })
-      navigate(`/confirmation/${rental.id}`, { replace: true })
+      navigate(`/confirmation/${rentalId}`, { replace: true })
       clearCart()
       resetDraft()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong on our side. Please try again.')
+      void refreshCatalog() // someone may have just booked those dates
       setSubmitting(false)
     }
   }

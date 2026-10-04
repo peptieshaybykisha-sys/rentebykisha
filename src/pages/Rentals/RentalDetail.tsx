@@ -1,23 +1,27 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Container from '@/components/common/Container'
-import { ErrorState } from '@/components/common/States'
+import { ErrorState, Notice } from '@/components/common/States'
 import { RentalSummary, StatusTimeline } from '@/components/rentals/RentalParts'
 import { Button } from '@/components/ui/Button'
 import Dialog from '@/components/ui/Dialog'
 import StatusBadge from '@/components/ui/StatusBadge'
-import { advanceRental, cancelRental } from '@/lib/api'
 import { CANCELLABLE_STATUSES, STATUS_HELP } from '@/constants/rental'
+import { useReceiptUrl } from '@/hooks/useReceiptUrl'
+import { cancelRental } from '@/lib/api'
 import { formatLong } from '@/lib/utils'
-import { useAuthStore, useMockDb } from '@/stores'
+import { useAccount } from '@/stores/account'
 
 export default function RentalDetail() {
   const { id } = useParams()
-  const user = useAuthStore((s) => s.user)
-  const rental = useMockDb((s) => s.rentals.find((r) => r.id === id && r.userId === user?.id))
+  const loaded = useAccount((s) => s.loaded)
+  const rental = useAccount((s) => s.rentals.find((r) => r.id === id))
+  const receipt = useReceiptUrl(rental?.receiptPath)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
+  if (!loaded) return <p className="py-24 text-center text-muted" aria-busy="true">Loading…</p>
   if (!rental)
     return (
       <ErrorState title="We could not find that rental" to="/rentals" cta="Back to my rentals">
@@ -43,18 +47,22 @@ export default function RentalDetail() {
       <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_17rem]">
         <div className="rounded-[2rem] border border-line bg-ivory p-5 sm:p-8">
           <RentalSummary rental={rental} />
-          {rental.receipt && (
+          {rental.receiptPath && (
             <section aria-labelledby="receipt" className="mt-8">
               <h2 id="receipt" className="mb-3 font-sans text-base font-medium">
                 GCash receipt
               </h2>
-              <img src={rental.receipt.dataUrl} alt="Uploaded GCash receipt" loading="lazy" className="max-h-72 rounded-2xl border border-line" />
+              {receipt ? (
+                <img src={receipt} alt="Uploaded GCash receipt" loading="lazy" className="max-h-72 rounded-2xl border border-line" />
+              ) : (
+                <p className="text-sm text-muted">Loading receipt…</p>
+              )}
             </section>
           )}
         </div>
 
         <aside className="space-y-6">
-          {rental.status === 'Cancelled' ? null : (
+          {rental.status !== 'Cancelled' && (
             <section aria-labelledby="progress" className="rounded-[1.75rem] border border-line bg-ivory p-5">
               <h2 id="progress" className="mb-4 text-2xl">
                 Progress
@@ -67,28 +75,26 @@ export default function RentalDetail() {
               Cancel this rental
             </Button>
           )}
-          {import.meta.env.DEV && rental.status !== 'Cancelled' && rental.status !== 'Completed' && (
-            <div className="rounded-2xl border border-dashed border-gold/60 p-4 text-sm text-muted">
-              <p className="font-medium text-ink">Demo control</p>
-              <p className="mb-2">Pretend our team moved this rental forward. Only shown in development.</p>
-              <Button size="sm" variant="soft" onClick={() => advanceRental(rental.id)}>
-                Advance to next status
-              </Button>
-            </div>
-          )}
         </aside>
       </div>
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} title="Cancel this rental?">
         <p className="text-muted">Your dates will be released. If you already paid, we will refund your payment to your GCash within 3 business days.</p>
+        {error && <Notice className="mt-4">{error}</Notice>}
         <div className="mt-6 flex gap-3">
           <Button
             loading={busy}
             onClick={async () => {
               setBusy(true)
-              await cancelRental(rental.id)
-              setBusy(false)
-              setConfirmOpen(false)
+              setError('')
+              try {
+                await cancelRental(rental.id)
+                setConfirmOpen(false)
+              } catch (e) {
+                setError(e instanceof Error ? e.message : 'We could not cancel this rental.')
+              } finally {
+                setBusy(false)
+              }
             }}
           >
             Yes, cancel rental

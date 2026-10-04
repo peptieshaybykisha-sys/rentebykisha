@@ -7,12 +7,13 @@ import AuthShell from '@/components/common/AuthShell'
 import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Field'
-import { sleep } from '@/lib/utils'
+import { requestPasswordReset } from '@/lib/api'
 
 const schema = z.object({ email: z.string().min(1, 'Please enter your email.').email('That email does not look right.') })
 
 export default function ForgotPassword() {
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
   const {
     register,
     handleSubmit,
@@ -27,12 +28,18 @@ export default function ForgotPassword() {
         <form
           noValidate
           className="space-y-5"
-          onSubmit={handleSubmit(async () => {
-            await sleep(600)
-            setSent(true)
+          onSubmit={handleSubmit(async (v) => {
+            setError('')
+            try {
+              await requestPasswordReset(v.email)
+              setSent(true)
+            } catch (e) {
+              setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
+            }
           })}
         >
           <p className="text-muted">Enter your email and we will send you a link to choose a new password.</p>
+          {error && <Notice>{error}</Notice>}
           <Input label="Email" type="email" autoComplete="email" error={errors.email?.message} {...register('email')} />
           <Button type="submit" size="lg" loading={isSubmitting} className="w-full">
             Send reset link

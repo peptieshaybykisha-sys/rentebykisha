@@ -2,16 +2,21 @@ import { ReceiptText } from 'lucide-react'
 import Container, { PageTitle } from '@/components/common/Container'
 import { EmptyState } from '@/components/common/States'
 import { RentalCard } from '@/components/rentals/RentalParts'
-import { useAuthStore, useMockDb } from '@/stores'
+import { useAccount } from '@/stores/account'
 
 export default function Rentals() {
-  const user = useAuthStore((s) => s.user)
-  const rentals = useMockDb((s) => s.rentals).filter((r) => r.userId === user?.id)
+  const { rentals, loaded, error } = useAccount()
 
   return (
     <Container className="max-w-4xl pb-8">
       <PageTitle title="My Rentals" />
-      {rentals.length ? (
+      {!loaded ? (
+        <p className="py-16 text-center text-muted" aria-busy="true">
+          Loading your rentals…
+        </p>
+      ) : error ? (
+        <EmptyState title="We could not load your rentals">Please refresh the page, or try again in a moment.</EmptyState>
+      ) : rentals.length ? (
         <ul className="space-y-4">
           {rentals.map((r) => (
             <li key={r.id}>

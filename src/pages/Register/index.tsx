@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Field'
 import { register as registerUser } from '@/lib/api'
 import { phoneSchema } from '@/lib/validation'
-import { useAuthStore } from '@/stores'
 
 const schema = z
   .object({
@@ -25,8 +24,8 @@ type Values = z.infer<typeof schema>
 export default function Register() {
   const navigate = useNavigate()
   const from = (useLocation().state as { from?: string } | null)?.from
-  const setUser = useAuthStore((s) => s.setUser)
   const [error, setError] = useState('')
+  const [confirmEmail, setConfirmEmail] = useState<string | null>(null)
   const {
     register,
     handleSubmit,
@@ -36,12 +35,27 @@ export default function Register() {
   const onSubmit = async ({ name, email, phone, password }: Values) => {
     setError('')
     try {
-      setUser(await registerUser({ name, email, phone, password }))
-      navigate(from ?? '/account', { replace: true })
+      const { needsConfirmation } = await registerUser({ name, email, phone, password })
+      if (needsConfirmation) setConfirmEmail(email)
+      else navigate(from ?? '/account', { replace: true })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
     }
   }
+
+  if (confirmEmail)
+    return (
+      <AuthShell title="Check Your Email" script="Almost there">
+        <Notice tone="success">
+          We sent a confirmation link to <strong>{confirmEmail}</strong>. Open it to activate your account, then log in.
+        </Notice>
+        <p className="mt-8 text-center">
+          <Link to="/login" state={{ from }} className="link-underline font-medium text-burgundy">
+            Go to login
+          </Link>
+        </p>
+      </AuthShell>
+    )
 
   return (
     <AuthShell title="Create Your Account" script="Welcome to Renté">

@@ -3,6 +3,7 @@ import { ACCOUNT_TABS } from '@/constants/navigation'
 import Container from '@/components/common/Container'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
+import { logout } from '@/lib/api'
 import { useAuthStore } from '@/stores'
 import { AddressesTab, FittingsTab, ProfileTab, RentalsTab, WishlistTab } from './Tabs'
 
@@ -10,7 +11,6 @@ export default function Account() {
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)!
-  const setUser = useAuthStore((s) => s.setUser)
   const tab = ACCOUNT_TABS.some((t) => t.id === params.get('tab')) ? params.get('tab')! : 'profile'
   const current = ACCOUNT_TABS.find((t) => t.id === tab)!
 
@@ -45,8 +45,7 @@ export default function Account() {
                 variant="ghost"
                 className="w-full justify-start md:rounded-2xl"
                 onClick={() => {
-                  setUser(null)
-                  navigate('/')
+                  void logout().then(() => navigate('/'))
                 }}
               >
                 Log out

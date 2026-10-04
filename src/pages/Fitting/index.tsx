@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,17 +10,13 @@ import Container from '@/components/common/Container'
 import { Notice } from '@/components/common/States'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Input, Select } from '@/components/ui/Field'
-import { useDressList } from '@/hooks/useDresses'
-import { bookFitting, bookedSlots } from '@/lib/api'
 import { STUDIO } from '@/constants/business'
 import { FITTING_SLOTS } from '@/constants/fitting'
+import { useDressList } from '@/hooks/useDresses'
+import { bookFitting, takenSlots } from '@/lib/api'
 import { phoneSchema } from '@/lib/validation'
 import { cn, formatLong } from '@/lib/utils'
-import { useAuthStore, useMockDb } from '@/stores'
-import type { FittingAppointment } from '@/types'
-
-/** Deterministic "already taken" slots so the demo always shows some variety. */
-const hashTaken = (date: string, slot: string) => [...(date + slot)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 7, 0) === 0
+import { useAuthStore } from '@/stores'
 
 const schema = z.object({
   name: z.string().trim().min(2, 'Please enter your name.'),
@@ -34,9 +30,9 @@ type Values = z.infer<typeof schema>
 export default function Fitting() {
   const dresses = useDressList()
   const user = useAuthStore((s) => s.user)
-  useMockDb((s) => s.fittings) // re-render when slots change
-  const [booked, setBooked] = useState<FittingAppointment | null>(null)
+  const [booked, setBooked] = useState<Values | null>(null)
   const [error, setError] = useState('')
+  const [taken, setTaken] = useState<{ date: string; slots: string[] } | null>(null)
   const {
     register,
     handleSubmit,
@@ -49,15 +45,30 @@ export default function Fitting() {
   })
   const date = watch('date')
   const time = watch('time')
-  const taken = date ? bookedSlots(date) : []
   const earliest = addDays(startOfDay(new Date()), 1)
+  const slotsLoaded = !!date && taken?.date === date
+
+  // Load which times are already booked for the chosen day.
+  useEffect(() => {
+    if (!date) return
+    let cancelled = false
+    takenSlots(date)
+      .then((slots) => !cancelled && setTaken({ date, slots }))
+      .catch(() => !cancelled && setTaken({ date, slots: [] }))
+    return () => {
+      cancelled = true
+    }
+  }, [date])
 
   const onSubmit = async (v: Values) => {
     setError('')
     try {
-      setBooked(await bookFitting({ ...v, dressId: v.dressId || undefined, userId: user?.id }))
+      await bookFitting({ name: v.name, phone: v.phone, dressId: v.dressId || undefined, date: v.date, time: v.time })
+      setBooked(v)
     } catch (e) {
       setValue('time', '')
+      setTaken(null)
+      setValue('date', v.date) // re-trigger loading of the day's slots
       setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
     }
   }
@@ -74,7 +85,8 @@ export default function Fitting() {
           {formatLong(booked.date)} at {booked.time}
         </p>
         <p className="mt-3 text-muted">
-          {STUDIO.name}{dress ? ` · We will have the ${dress.name} ready for you` : ''}. We will text {booked.phone} to confirm.
+          {STUDIO.name}
+          {dress ? ` · We will have the ${dress.name} ready for you` : ''}. We will text {booked.phone} to confirm.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <ButtonLink to="/dresses" size="lg">
@@ -119,10 +131,14 @@ export default function Fitting() {
             <legend className="mb-2 text-sm font-medium">Time</legend>
             {!date ? (
               <p className="text-muted">Choose a date to see available times.</p>
+            ) : !slotsLoaded ? (
+              <p className="text-muted" aria-busy="true">
+                Checking available times…
+              </p>
             ) : (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4">
                 {FITTING_SLOTS.map((s) => {
-                  const unavailable = taken.includes(s) || hashTaken(date, s)
+                  const unavailable = taken!.slots.includes(s)
                   return (
                     <label key={s} className={cn(unavailable ? 'cursor-not-allowed' : 'cursor-pointer')}>
                       <input

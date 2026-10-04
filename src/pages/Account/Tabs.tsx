@@ -12,7 +12,14 @@ import { useDressList } from '@/hooks/useDresses'
 import { cancelFitting, removeAddress, saveAddress, updateProfile } from '@/lib/api'
 import { phoneSchema } from '@/lib/validation'
 import { formatLong } from '@/lib/utils'
-import { useAuthStore, useMockDb, useWishlistStore } from '@/stores'
+import { useAuthStore, useWishlistStore } from '@/stores'
+import { useAccount } from '@/stores/account'
+
+const Loading = () => (
+  <p className="py-10 text-muted" aria-busy="true">
+    Loading…
+  </p>
+)
 
 /* ---------- Profile ---------- */
 const profileSchema = z.object({ name: z.string().trim().min(2, 'Please enter your name.'), phone: phoneSchema })
@@ -20,8 +27,8 @@ type ProfileValues = z.infer<typeof profileSchema>
 
 export function ProfileTab() {
   const user = useAuthStore((s) => s.user)!
-  const setUser = useAuthStore((s) => s.setUser)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
   const {
     register,
     handleSubmit,
@@ -34,11 +41,17 @@ export function ProfileTab() {
       className="max-w-lg space-y-5"
       onSubmit={handleSubmit(async (v) => {
         setSaved(false)
-        setUser(await updateProfile(user.id, v))
-        setSaved(true)
+        setError('')
+        try {
+          await updateProfile(user.id, v)
+          setSaved(true)
+        } catch (e) {
+          setError(e instanceof Error ? e.message : 'We could not save your changes.')
+        }
       })}
     >
       {saved && <Notice tone="success">Your profile has been updated.</Notice>}
+      {error && <Notice>{error}</Notice>}
       <Input label="Name" autoComplete="name" error={errors.name?.message} {...register('name')} />
       <Input label="Email" type="email" value={user.email} readOnly hint="Your email is used to log in." />
       <Input label="Phone" type="tel" autoComplete="tel" error={errors.phone?.message} {...register('phone')} />
@@ -51,8 +64,8 @@ export function ProfileTab() {
 
 /* ---------- Rentals ---------- */
 export function RentalsTab() {
-  const user = useAuthStore((s) => s.user)!
-  const rentals = useMockDb((s) => s.rentals).filter((r) => r.userId === user.id)
+  const { rentals, loaded } = useAccount()
+  if (!loaded) return <Loading />
   if (!rentals.length) return <EmptyState icon={ReceiptText} title="No rentals yet." to="/dresses" cta="Find a dress for your next occasion" className="py-10" />
   return (
     <ul className="space-y-4">
@@ -77,27 +90,33 @@ export function WishlistTab() {
 /* ---------- Fittings ---------- */
 export function FittingsTab() {
   const dresses = useDressList()
-  const user = useAuthStore((s) => s.user)!
-  const fittings = useMockDb((s) => s.fittings)
-    .filter((f) => f.userId === user.id)
-    .sort((a, b) => a.date.localeCompare(b.date))
+  const { fittings, loaded } = useAccount()
+  const [error, setError] = useState('')
+  if (!loaded) return <Loading />
   if (!fittings.length) return <EmptyState icon={CalendarHeart} title="No fittings booked." to="/fitting" cta="Schedule my fitting" className="py-10" />
   return (
-    <ul className="space-y-3">
-      {fittings.map((f) => (
-        <li key={f.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-ivory p-4 sm:p-5">
-          <div>
-            <p className="font-serif text-2xl text-burgundy">
-              {formatLong(f.date)} · {f.time}
-            </p>
-            <p className="text-[0.95rem] text-muted">{dresses.find((d) => d.id === f.dressId)?.name ?? 'Open fitting — a few dresses'}</p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => cancelFitting(f.id)}>
-            Cancel
-          </Button>
-        </li>
-      ))}
-    </ul>
+    <>
+      {error && <Notice className="mb-4">{error}</Notice>}
+      <ul className="space-y-3">
+        {fittings.map((f) => (
+          <li key={f.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-ivory p-4 sm:p-5">
+            <div>
+              <p className="font-serif text-2xl text-burgundy">
+                {formatLong(f.date)} · {f.time}
+              </p>
+              <p className="text-[0.95rem] text-muted">{dresses.find((d) => d.id === f.dressId)?.name ?? 'Open fitting — a few dresses'}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => cancelFitting(f.id).catch((e) => setError(e instanceof Error ? e.message : 'We could not cancel that fitting.'))}
+            >
+              Cancel
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </>
   )
 }
 
@@ -110,15 +129,16 @@ const addrSchema = z.object({
 type AddrValues = z.infer<typeof addrSchema>
 
 export function AddressesTab() {
-  const user = useAuthStore((s) => s.user)!
-  const addresses = useMockDb((s) => s.addresses[user.id]) ?? []
+  const { addresses, loaded } = useAccount()
+  const [error, setError] = useState('')
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<AddrValues>({ resolver: zodResolver(addrSchema) })
 
+  if (!loaded) return <Loading />
   return (
     <div className="grid gap-10 lg:grid-cols-2">
       <div>
@@ -135,7 +155,12 @@ export function AddressesTab() {
                     </p>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => removeAddress(user.id, a.id)} aria-label={`Remove ${a.label}`}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeAddress(a.id).catch((e) => setError(e instanceof Error ? e.message : 'We could not remove that address.'))}
+                  aria-label={`Remove ${a.label}`}
+                >
                   Remove
                 </Button>
               </li>
@@ -151,16 +176,24 @@ export function AddressesTab() {
       <form
         noValidate
         className="space-y-4 rounded-[1.75rem] border border-line bg-ivory p-5 sm:p-6"
-        onSubmit={handleSubmit((v) => {
-          saveAddress(user.id, v)
-          reset()
+        onSubmit={handleSubmit(async (v) => {
+          setError('')
+          try {
+            await saveAddress(v)
+            reset()
+          } catch (e) {
+            setError(e instanceof Error ? e.message : 'We could not save that address.')
+          }
         })}
       >
         <h3 className="text-2xl">Add an address</h3>
+        {error && <Notice>{error}</Notice>}
         <Input label="Label" placeholder="Home" error={errors.label?.message} {...register('label')} />
         <Input label="Address" autoComplete="street-address" placeholder="House no., street, barangay" error={errors.line1?.message} {...register('line1')} />
         <Input label="City" autoComplete="address-level2" error={errors.city?.message} {...register('city')} />
-        <Button type="submit">Save address</Button>
+        <Button type="submit" loading={isSubmitting}>
+          Save address
+        </Button>
       </form>
     </div>
   )
