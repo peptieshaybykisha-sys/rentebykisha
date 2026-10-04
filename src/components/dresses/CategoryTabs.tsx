@@ -1,11 +1,10 @@
 import { motion } from 'motion/react'
 import { useId } from 'react'
-import { CATEGORIES } from '@/data/dresses'
+import { CATEGORY_FILTERS } from '@/constants/catalog'
 import { cn } from '@/lib/utils'
-import type { Category } from '@/types'
+import type { CategoryFilter } from '@/types'
 
-export type CategoryFilter = Category | 'All'
-const ALL: CategoryFilter[] = ['All', ...CATEGORIES]
+export type { CategoryFilter }
 
 /** Quiet text navigation — no filter panels. */
 export default function CategoryTabs({ value, onChange, className }: { value: CategoryFilter; onChange: (c: CategoryFilter) => void; className?: string }) {
@@ -13,7 +12,7 @@ export default function CategoryTabs({ value, onChange, className }: { value: Ca
   return (
     <nav aria-label="Dress categories" className={cn('-mx-5 overflow-x-auto px-5 no-scrollbar sm:mx-0 sm:px-0', className)}>
       <ul className="flex min-w-max gap-1 sm:min-w-0 sm:flex-wrap sm:justify-center sm:gap-3">
-        {ALL.map((c) => {
+        {CATEGORY_FILTERS.map((c) => {
           const active = c === value
           return (
             <li key={c}>

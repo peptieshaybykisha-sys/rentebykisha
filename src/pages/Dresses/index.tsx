@@ -4,7 +4,7 @@ import Container, { PageTitle } from '@/components/common/Container'
 import { EmptyState } from '@/components/common/States'
 import CategoryTabs, { type CategoryFilter } from '@/components/dresses/CategoryTabs'
 import DressGrid from '@/components/dresses/DressGrid'
-import { CATEGORIES } from '@/data/dresses'
+import { CATEGORIES } from '@/constants/catalog'
 import { useDressList, useDresses } from '@/hooks/useDresses'
 
 export default function Dresses() {

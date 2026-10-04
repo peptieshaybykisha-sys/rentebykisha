@@ -11,6 +11,7 @@ import {
 } from 'motion/react'
 import { ChevronDown } from 'lucide-react'
 import logo from '@/assets/logo.jpg'
+import { DOOR_ANGLES, DOOR_ANGLES_REDUCED, DOOR_PROGRESS } from '@/constants/home'
 import { cn } from '@/lib/utils'
 import { Bow, Flowers } from './Decor'
 import Showroom from './Showroom'
@@ -86,7 +87,7 @@ export default function BoutiqueHero() {
   useMotionValueEvent(p, 'change', (v) => setOpened(v > 0.82))
 
   // 0–15% a crack of light, 40% a clear gap, 60% half open, 80% nearly open, 100% fully open.
-  const angle = useTransform(p, [0, 0.15, 0.4, 0.6, 0.85, 1], reduce ? [0, 0, 0, 0, 0, 0] : [0, 3, 26, 50, 70, 82])
+  const angle = useTransform(p, DOOR_PROGRESS, reduce ? DOOR_ANGLES_REDUCED : DOOR_ANGLES)
   const doorShade = useTransform(p, [0, 1], [0, 0.55])
   const doorFade = useTransform(p, reduce ? [0.1, 0.5] : [0, 1], reduce ? [1, 0] : [1, 1])
   const dim = useTransform(p, [0, 0.2, 0.6], [0.75, 0.6, 0])

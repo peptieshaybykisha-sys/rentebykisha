@@ -3,6 +3,7 @@ import { Link, Navigate, NavLink, Outlet } from 'react-router-dom'
 import { ArrowDown, ArrowUp, ExternalLink, LogOut, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Notice } from '@/components/common/States'
+import { ADMIN_NAV } from '@/constants/navigation'
 import { isFirebaseConfigured } from '@/lib/firebase'
 import { adminSignOut, startAdminAuth, useAdmin } from '@/stores/admin'
 import { cn } from '@/lib/utils'
@@ -34,13 +35,6 @@ export function RequireAdmin() {
   return <Outlet />
 }
 
-const NAV = [
-  { to: '/admin', label: 'Dresses', end: true },
-  { to: '/admin/hero', label: 'Hero dresses' },
-  { to: '/admin/size-guide', label: 'Size guide' },
-  { to: '/admin/how-it-works', label: 'How it works' },
-]
-
 export function AdminLayout() {
   const email = useAdmin((s) => s.email)
   return (
@@ -66,7 +60,7 @@ export function AdminLayout() {
           </div>
         </div>
         <nav aria-label="Admin sections" className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-5 no-scrollbar sm:px-8">
-          {NAV.map((n) => (
+          {ADMIN_NAV.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}

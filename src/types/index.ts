@@ -1,3 +1,4 @@
+export type CategoryFilter = Category | 'All'
 export type Category = 'Evening' | 'Formal' | 'Cocktail' | 'Bridal' | 'Prom' | 'Events'
 /** Sizes are free text so each dress can use its own labels (XS, 8, Free size...). */
 export type Size = string

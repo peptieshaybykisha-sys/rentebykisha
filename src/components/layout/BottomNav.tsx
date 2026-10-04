@@ -1,14 +1,7 @@
 import { NavLink } from 'react-router-dom'
-import { BookOpen, Heart, House, User } from 'lucide-react'
+import { MOBILE_NAV } from '@/constants/navigation'
 import { useWishlistStore } from '@/stores'
 import { cn } from '@/lib/utils'
-
-const ITEMS = [
-  { to: '/', label: 'Home', icon: House, end: true },
-  { to: '/collections', label: 'Lookbook', icon: BookOpen },
-  { to: '/wishlist', label: 'Saved', icon: Heart },
-  { to: '/account', label: 'Account', icon: User },
-]
 
 export default function BottomNav() {
   const saved = useWishlistStore((s) => s.ids.length)
@@ -18,7 +11,7 @@ export default function BottomNav() {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-cream/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
     >
       <ul className="mx-auto grid h-[var(--bottom-nav-h)] max-w-md grid-cols-4">
-        {ITEMS.map(({ to, label, icon: Icon, end }) => (
+        {MOBILE_NAV.map(({ to, label, icon: Icon, end }) => (
           <li key={to}>
             <NavLink
               to={to}

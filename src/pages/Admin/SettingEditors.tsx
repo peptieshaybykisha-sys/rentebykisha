@@ -1,12 +1,13 @@
 import { useState, type ReactNode } from 'react'
 import { Plus } from 'lucide-react'
 import { MoveButtons, NotConfigured } from '@/components/admin/AdminShell'
-import { STEP_ICON_NAMES, STEP_ICONS } from '@/components/common/StepIcon'
 import { Notice } from '@/components/common/States'
 import DressPhoto from '@/components/dresses/DressPhoto'
 import { Button } from '@/components/ui/Button'
 import { Input, Select, Textarea } from '@/components/ui/Field'
-import { DEFAULT_HOW_IT_WORKS, DEFAULT_SIZE_GUIDE } from '@/data/defaults'
+import { HERO_MAX_DRESSES, HERO_SLOT_NAMES } from '@/constants/home'
+import { DEFAULT_HOW_IT_WORKS, MAX_STEPS, STEP_ICON_NAMES, STEP_ICONS } from '@/constants/howItWorks'
+import { DEFAULT_SIZE_GUIDE } from '@/constants/sizeGuide'
 import { useDressList } from '@/hooks/useDresses'
 import { saveSetting } from '@/lib/adminApi'
 import { isFirebaseConfigured } from '@/lib/firebase'
@@ -131,7 +132,6 @@ function SizeGuideForm({ initial }: { initial: SizeGuideContent }) {
 }
 
 /* ---------------- Hero dresses ---------------- */
-const SLOT_NAMES = ['Centre piece', 'Right', 'Left', 'Far right', 'Far left']
 
 export function HeroEditor() {
   const { ready, configured } = useReadyGuard()
@@ -155,7 +155,7 @@ function HeroForm({ initial }: { initial: string[] }) {
     >
       <section aria-labelledby="chosen">
         <h2 id="chosen" className="mb-3 font-sans text-lg font-medium text-ink">
-          On display ({ids.length}/5)
+          On display ({ids.length}/{HERO_MAX_DRESSES})
         </h2>
         {chosen.length === 0 ? (
           <p className="text-muted">Nothing chosen yet.</p>
@@ -168,7 +168,7 @@ function HeroForm({ initial }: { initial: string[] }) {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-serif text-xl text-burgundy">{d.name}</span>
-                  <span className="text-sm text-muted">{SLOT_NAMES[i]}</span>
+                  <span className="text-sm text-muted">{HERO_SLOT_NAMES[i]}</span>
                 </span>
                 <MoveButtons index={i} count={ids.length} label={d.name} onMove={(to) => setIds(move(ids, i, to))} onRemove={() => setIds(ids.filter((x) => x !== d.id))} />
               </li>
@@ -191,7 +191,7 @@ function HeroForm({ initial }: { initial: string[] }) {
                 <li key={d.id}>
                   <button
                     type="button"
-                    disabled={noPhoto || ids.length >= 5}
+                    disabled={noPhoto || ids.length >= HERO_MAX_DRESSES}
                     onClick={() => setIds([...ids, d.id])}
                     className="block w-full rounded-2xl border border-line bg-ivory p-2 text-left transition-colors hover:border-burgundy disabled:opacity-50 disabled:hover:border-line"
                   >
@@ -238,7 +238,7 @@ function HowItWorksForm({ initial }: { initial: HowItWorksContent }) {
     >
       <section aria-labelledby="steps" className="space-y-3">
         <h2 id="steps" className="font-sans text-lg font-medium text-ink">
-          Steps (up to 5)
+          Steps (up to {MAX_STEPS})
         </h2>
         {c.steps.map((s, i) => {
           const Icon = STEP_ICONS[s.icon]
@@ -264,7 +264,7 @@ function HowItWorksForm({ initial }: { initial: HowItWorksContent }) {
             </div>
           )
         })}
-        {c.steps.length < 5 && (
+        {c.steps.length < MAX_STEPS && (
           <Button variant="secondary" size="sm" onClick={() => setC({ ...c, steps: [...c.steps, { icon: 'sparkles', title: '', text: '' }] })}>
             <Plus className="size-4" aria-hidden /> Add a step
           </Button>

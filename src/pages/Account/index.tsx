@@ -1,26 +1,18 @@
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { CalendarHeart, Heart, MapPin, ReceiptText, UserRound, type LucideIcon } from 'lucide-react'
+import { ACCOUNT_TABS } from '@/constants/navigation'
 import Container from '@/components/common/Container'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores'
 import { AddressesTab, FittingsTab, ProfileTab, RentalsTab, WishlistTab } from './Tabs'
 
-const TABS: { id: string; label: string; icon: LucideIcon }[] = [
-  { id: 'profile', label: 'Profile', icon: UserRound },
-  { id: 'rentals', label: 'My Rentals', icon: ReceiptText },
-  { id: 'wishlist', label: 'Wishlist', icon: Heart },
-  { id: 'fittings', label: 'Fitting Appointments', icon: CalendarHeart },
-  { id: 'addresses', label: 'Addresses', icon: MapPin },
-]
-
 export default function Account() {
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)!
   const setUser = useAuthStore((s) => s.setUser)
-  const tab = TABS.some((t) => t.id === params.get('tab')) ? params.get('tab')! : 'profile'
-  const current = TABS.find((t) => t.id === tab)!
+  const tab = ACCOUNT_TABS.some((t) => t.id === params.get('tab')) ? params.get('tab')! : 'profile'
+  const current = ACCOUNT_TABS.find((t) => t.id === tab)!
 
   return (
     <Container className="pb-8">
@@ -32,7 +24,7 @@ export default function Account() {
       <div className="grid gap-8 md:grid-cols-[15rem_1fr] lg:gap-14">
         <nav aria-label="Account sections" className="-mx-5 overflow-x-auto px-5 no-scrollbar md:mx-0 md:px-0">
           <ul className="flex gap-2 md:flex-col md:gap-1">
-            {TABS.map(({ id, label, icon: Icon }) => (
+            {ACCOUNT_TABS.map(({ id, label, icon: Icon }) => (
               <li key={id} className="shrink-0">
                 <button
                   type="button"

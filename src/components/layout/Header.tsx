@@ -3,14 +3,8 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Heart, Search, ShoppingBag, ReceiptText, User } from 'lucide-react'
 import { useAuthStore, useCartStore, useWishlistStore } from '@/stores'
 import { cn } from '@/lib/utils'
+import { MAIN_NAV } from '@/constants/navigation'
 import SearchDialog from './SearchDialog'
-
-const NAV = [
-  { to: '/', label: 'Home', end: true },
-  { to: '/dresses', label: 'Dresses' },
-  { to: '/collections', label: 'Collections' },
-  { to: '/how-it-works', label: 'How It Works' },
-]
 
 function Badge({ n }: { n: number }) {
   if (!n) return null
@@ -68,7 +62,7 @@ export default function Header() {
           </Link>
 
           <nav aria-label="Main" className="hidden items-center gap-9 lg:flex">
-            {NAV.map((n) => (
+            {MAIN_NAV.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}

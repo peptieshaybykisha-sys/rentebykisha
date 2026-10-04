@@ -1,6 +1,7 @@
 import { addDays, areIntervalsOverlapping, isBefore, startOfDay } from 'date-fns'
 import type { Dress } from '@/types'
-import { LEAD_DAYS, MAX_DAYS, rentalDays } from './pricing'
+import { LEAD_DAYS, MAX_DAYS } from '@/constants/business'
+import { rentalDays } from './pricing'
 import { formatShort, fromISODate, toISODate } from './utils'
 
 export const earliestPickup = () => addDays(startOfDay(new Date()), LEAD_DAYS)

@@ -1,6 +1,6 @@
 import { useHowItWorks } from '@/hooks/useSettings'
 import { cn } from '@/lib/utils'
-import { STEP_ICONS } from './StepIcon'
+import { STEP_ICONS } from '@/constants/howItWorks'
 
 export default function HowItWorksSteps() {
   const { steps } = useHowItWorks()

@@ -12,6 +12,7 @@ import {
   subMonths,
 } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { WEEKDAYS } from '@/constants/fitting'
 import { cn, fromISODate, toISODate } from '@/lib/utils'
 
 interface Props {
@@ -24,8 +25,6 @@ interface Props {
   initialMonth?: Date
   className?: string
 }
-
-const WEEK = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
 export default function Calendar({ start, end, onPick, isDisabled, isStruck, minMonth = new Date(), initialMonth, className }: Props) {
   const [month, setMonth] = useState(() => startOfMonth(initialMonth ?? (start ? fromISODate(start) : new Date())))
@@ -60,7 +59,7 @@ export default function Calendar({ start, end, onPick, isDisabled, isStruck, min
       </div>
 
       <div className="grid grid-cols-7 text-center text-sm text-muted" aria-hidden>
-        {WEEK.map((w) => (
+        {WEEKDAYS.map((w) => (
           <span key={w} className="py-1">
             {w}
           </span>

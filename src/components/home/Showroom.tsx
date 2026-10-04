@@ -1,21 +1,11 @@
 import { memo } from 'react'
 import DressPhoto from '@/components/dresses/DressPhoto'
+import { SHOWROOM_SLOTS } from '@/constants/home'
 import { useHeroDresses } from '@/hooks/useSettings'
 import { cn } from '@/lib/utils'
 import { Flowers, Pendant, Rack } from './Decor'
 
-/**
- * The editorial showroom revealed behind the doors. The dresses shown are chosen in /admin > Hero.
- * Slot 0 is the centre piece, then right and left pairs outward.
- */
-const SLOTS = [
-  { left: '50%', size: 'h-[74%] md:h-[62%]', z: 3, hideOnSmall: false },
-  { left: '19%', size: 'h-[58%] md:h-[50%]', z: 2, hideOnSmall: false },
-  { left: '81%', size: 'h-[58%] md:h-[50%]', z: 2, hideOnSmall: false },
-  { left: '-3%', size: 'h-[46%] md:h-[40%]', z: 1, hideOnSmall: true },
-  { left: '103%', size: 'h-[46%] md:h-[40%]', z: 1, hideOnSmall: true },
-]
-
+/** The editorial showroom revealed behind the doors. The dresses shown are chosen in /admin > Hero. */
 function Showroom() {
   const dresses = useHeroDresses()
   return (
@@ -36,7 +26,7 @@ function Showroom() {
       <Flowers className="absolute bottom-[6%] right-[3%] h-[24%] max-md:right-[-2%] md:hidden" />
 
       {dresses.map((dress, i) => {
-        const slot = SLOTS[i]
+        const slot = SHOWROOM_SLOTS[i]
         if (!slot) return null
         return (
           <div

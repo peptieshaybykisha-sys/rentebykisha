@@ -7,7 +7,8 @@ import AuthShell from '@/components/common/AuthShell'
 import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Field'
-import { DEMO_LOGIN, login } from '@/lib/api'
+import { DEMO_LOGIN } from '@/constants/business'
+import { login } from '@/lib/api'
 import { useAuthStore } from '@/stores'
 
 const schema = z.object({

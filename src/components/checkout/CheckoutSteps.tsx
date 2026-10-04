@@ -6,22 +6,19 @@ import { CalendarDays, Check, ImagePlus, Truck, Store } from 'lucide-react'
 import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Field'
-import { GCASH, STUDIO } from '@/lib/config'
+import { DELIVERY_FEE, GCASH, STUDIO } from '@/constants/business'
+import { CHECKOUT_STEP_LABELS } from '@/constants/checkout'
 import { receiptToDataUrl } from '@/lib/image'
 import { customerSchema } from '@/lib/validation'
 import { cn, formatPeso, formatRange } from '@/lib/utils'
 import { useDressLookup } from '@/hooks/useDresses'
-import { DELIVERY_FEE } from '@/lib/pricing'
 import type { CartItem, CustomerInfo, Fulfillment } from '@/types'
 
 /* ---------- Stepper ---------- */
-// eslint-disable-next-line react-refresh/only-export-components
-export const STEP_LABELS = ['Customer', 'Rental details', 'Payment']
-
 export function Stepper({ step }: { step: number }) {
   return (
     <ol className="mb-10 flex items-center justify-center gap-2 sm:gap-4" aria-label="Checkout progress">
-      {STEP_LABELS.map((label, i) => {
+      {CHECKOUT_STEP_LABELS.map((label, i) => {
         const n = i + 1
         const done = n < step
         const current = n === step
@@ -40,7 +37,7 @@ export function Stepper({ step }: { step: number }) {
               </span>
               <span className={cn('text-[0.95rem] max-sm:sr-only', current ? 'font-medium text-burgundy' : 'text-muted')}>{label}</span>
             </span>
-            {n < STEP_LABELS.length && <span aria-hidden className="h-px w-6 bg-line sm:w-12" />}
+            {n < CHECKOUT_STEP_LABELS.length && <span aria-hidden className="h-px w-6 bg-line sm:w-12" />}
           </li>
         )
       })}

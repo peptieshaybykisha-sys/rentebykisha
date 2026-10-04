@@ -3,7 +3,7 @@ import { Check } from 'lucide-react'
 import DressPhoto from '@/components/dresses/DressPhoto'
 import StatusBadge from '@/components/ui/StatusBadge'
 import { useDressLookup } from '@/hooks/useDresses'
-import { STATUS_FLOW } from '@/lib/status'
+import { STATUS_FLOW } from '@/constants/rental'
 import { cn, formatLong, formatPeso, formatRange } from '@/lib/utils'
 import type { Rental } from '@/types'
 

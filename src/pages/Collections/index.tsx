@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import Container, { PageTitle } from '@/components/common/Container'
 import DressCard from '@/components/dresses/DressCard'
-import { CATEGORIES, OCCASION_BLURBS } from '@/data/dresses'
+import { CATEGORIES, OCCASION_BLURBS } from '@/constants/catalog'
 import { useDressList } from '@/hooks/useDresses'
 
 export default function Collections() {

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import logo from '@/assets/logo.jpg'
-import { CATEGORIES } from '@/data/dresses'
+import { CATEGORIES } from '@/constants/catalog'
 
 export default function Footer() {
   return (

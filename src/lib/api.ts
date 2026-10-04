@@ -9,7 +9,8 @@ import type { Address, CartItem, CustomerInfo, FittingAppointment, Fulfillment, 
 import { checkAvailability } from './availability'
 import { computeTotals, rentalFee } from './pricing'
 import { sleep } from './utils'
-import { STATUS_FLOW } from './status'
+import { DEMO_LOGIN } from '@/constants/business'
+import { STATUS_FLOW } from '@/constants/rental'
 
 export class ApiError extends Error {}
 
@@ -171,8 +172,6 @@ export function removeAddress(userId: string, id: string) {
 }
 
 /* ---------------- seed ---------------- */
-export const DEMO_LOGIN = { email: 'demo@rente.ph', password: 'password123' }
-
 /** Creates the demo customer account the first time the app runs. */
 export function seedDemo() {
   if (db().users.some((u) => u.email === DEMO_LOGIN.email)) return

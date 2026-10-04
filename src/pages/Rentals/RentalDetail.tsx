@@ -7,11 +7,9 @@ import { Button } from '@/components/ui/Button'
 import Dialog from '@/components/ui/Dialog'
 import StatusBadge from '@/components/ui/StatusBadge'
 import { advanceRental, cancelRental } from '@/lib/api'
-import { STATUS_HELP } from '@/lib/status'
+import { CANCELLABLE_STATUSES, STATUS_HELP } from '@/constants/rental'
 import { formatLong } from '@/lib/utils'
 import { useAuthStore, useMockDb } from '@/stores'
-
-const CANCELLABLE = ['Pending Payment', 'Payment Verification', 'Confirmed']
 
 export default function RentalDetail() {
   const { id } = useParams()
@@ -64,7 +62,7 @@ export default function RentalDetail() {
               <StatusTimeline rental={rental} />
             </section>
           )}
-          {CANCELLABLE.includes(rental.status) && (
+          {CANCELLABLE_STATUSES.includes(rental.status) && (
             <Button variant="secondary" className="w-full" onClick={() => setConfirmOpen(true)}>
               Cancel this rental
             </Button>

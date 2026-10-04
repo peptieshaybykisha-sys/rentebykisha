@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { DEFAULT_HOW_IT_WORKS, DEFAULT_SIZE_GUIDE } from '@/data/defaults'
+import { DEFAULT_HOW_IT_WORKS } from '@/constants/howItWorks'
+import { DEFAULT_SIZE_GUIDE } from '@/constants/sizeGuide'
 import { useCatalog } from '@/stores/catalog'
 import type { Dress } from '@/types'
 

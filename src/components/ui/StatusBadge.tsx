@@ -1,4 +1,4 @@
-import { STATUS_STYLES } from '@/lib/status'
+import { STATUS_STYLES } from '@/constants/rental'
 import { cn } from '@/lib/utils'
 import type { RentalStatus } from '@/types'
 

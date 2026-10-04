@@ -12,13 +12,12 @@ import { Button, ButtonLink } from '@/components/ui/Button'
 import { Input, Select } from '@/components/ui/Field'
 import { useDressList } from '@/hooks/useDresses'
 import { bookFitting, bookedSlots } from '@/lib/api'
-import { STUDIO } from '@/lib/config'
+import { STUDIO } from '@/constants/business'
+import { FITTING_SLOTS } from '@/constants/fitting'
 import { phoneSchema } from '@/lib/validation'
 import { cn, formatLong } from '@/lib/utils'
 import { useAuthStore, useMockDb } from '@/stores'
 import type { FittingAppointment } from '@/types'
-
-const SLOTS = ['10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM']
 
 /** Deterministic "already taken" slots so the demo always shows some variety. */
 const hashTaken = (date: string, slot: string) => [...(date + slot)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 7, 0) === 0
@@ -122,7 +121,7 @@ export default function Fitting() {
               <p className="text-muted">Choose a date to see available times.</p>
             ) : (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4">
-                {SLOTS.map((s) => {
+                {FITTING_SLOTS.map((s) => {
                   const unavailable = taken.includes(s) || hashTaken(date, s)
                   return (
                     <label key={s} className={cn(unavailable ? 'cursor-not-allowed' : 'cursor-pointer')}>

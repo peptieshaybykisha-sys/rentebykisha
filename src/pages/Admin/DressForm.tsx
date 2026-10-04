@@ -9,7 +9,7 @@ import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
 import Dialog from '@/components/ui/Dialog'
 import { Input, Select, Textarea } from '@/components/ui/Field'
-import { CATEGORIES } from '@/data/dresses'
+import { CATEGORIES, SIZE_PRESETS } from '@/constants/catalog'
 import { useDress } from '@/hooks/useDresses'
 import { deleteDress, deleteImages, newDressId, saveDress, uploadDressImage } from '@/lib/adminApi'
 import { isFirebaseConfigured } from '@/lib/firebase'
@@ -29,8 +29,6 @@ const schema = z.object({
   featured: z.boolean(),
 })
 type Values = z.infer<typeof schema>
-
-const PRESETS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free size']
 
 export default function DressForm() {
   const { id } = useParams()
@@ -220,7 +218,7 @@ function Editor({ dress }: { dress?: Dress }) {
           {sizes.length === 0 && <li className="text-muted">No sizes yet.</li>}
         </ul>
         <div className="flex flex-wrap gap-2">
-          {PRESETS.filter((p) => !sizes.includes(p)).map((p) => (
+          {SIZE_PRESETS.filter((p) => !sizes.includes(p)).map((p) => (
             <button key={p} type="button" onClick={() => addSize(p)} className="min-h-10 rounded-full border border-line bg-ivory px-4 text-sm hover:border-burgundy">
               + {p}
             </button>
