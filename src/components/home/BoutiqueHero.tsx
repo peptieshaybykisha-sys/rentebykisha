@@ -10,10 +10,10 @@ import {
   type MotionValue,
 } from 'motion/react'
 import { ChevronDown } from 'lucide-react'
-import logo from '@/assets/logo.jpg'
+import logo from '@/assets/logo.png'
 import { DOOR_ANGLES, DOOR_ANGLES_REDUCED, DOOR_PROGRESS } from '@/constants/home'
 import { cn } from '@/lib/utils'
-import { Bow, Flowers } from './Decor'
+import { Flowers } from './Decor'
 import Showroom from './Showroom'
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
@@ -74,7 +74,7 @@ export default function BoutiqueHero() {
       const W = arch.offsetWidth
       const H = arch.offsetHeight
       const header = vw >= 768 ? 76 : 64
-      const needAbove = header + plaque.offsetHeight + 52
+      const needAbove = header + plaque.offsetHeight + 24
       endScale.set(Math.max(vw / W, vh / H) * 1.04)
       shift.set(Math.max(0, needAbove - (vh - H) / 2))
     }
@@ -123,15 +123,11 @@ export default function BoutiqueHero() {
         <motion.div className="absolute left-1/2 top-1/2 origin-center" style={{ x: '-50%', y, scale }}>
           <div aria-hidden className="absolute -inset-[200vmax] -z-10 bg-gradient-to-b from-[#fbf3ec] via-blush-soft to-[#f2d7d6]" />
 
-          {/* boutique sign */}
-          <div className="absolute bottom-full left-1/2 mb-11 -translate-x-1/2">
-            <div
-              ref={plaqueRef}
-              className="aspect-[2.3/1] w-[min(62vw,16rem)] overflow-hidden rounded-xl border-2 border-gold/70 shadow-lift md:w-[17.5rem]"
-            >
-              <img src={logo} alt="Renté by Kisha" width={640} height={640} fetchPriority="high" className="size-full object-cover [object-position:50%_52%]" />
+          {/* boutique sign: hangs above the doorway */}
+          <div className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
+            <div ref={plaqueRef} className="aspect-square w-[min(40vw,10rem)] md:w-[11rem]">
+              <img src={logo} alt="Renté by Kisha" width={500} height={500} fetchPriority="high" className="size-full object-contain drop-shadow-[0_18px_18px_rgba(90,16,37,0.3)]" />
             </div>
-            <Bow className="absolute -bottom-[2.1rem] left-1/2 w-14 -translate-x-1/2 drop-shadow" />
           </div>
 
           {/* side flowers */}
@@ -142,7 +138,7 @@ export default function BoutiqueHero() {
           <div
             ref={archRef}
             onClick={opened ? undefined : openDoors}
-            className="relative h-[min(54svh,36rem)] w-[min(88vw,26rem)] cursor-pointer overflow-hidden rounded-t-[999px] bg-[#f3dcc0] shadow-[0_0_0_7px_#fffdf8,0_0_0_8px_rgba(201,164,92,0.6),0_0_0_20px_#f6e4e3,0_0_0_21px_#e8dcd2,0_30px_60px_-20px_rgba(90,16,37,0.45)] [perspective:1300px] md:w-[min(46vw,40rem)] md:h-[min(60svh,38rem)]"
+            className="relative h-[min(52svh,36rem)] w-[min(88vw,26rem)] cursor-pointer overflow-hidden rounded-t-[999px] bg-[#f3dcc0] shadow-[0_0_0_7px_#fffdf8,0_0_0_8px_rgba(201,164,92,0.6),0_0_0_20px_#f6e4e3,0_0_0_21px_#e8dcd2,0_30px_60px_-20px_rgba(90,16,37,0.45)] [perspective:1300px] md:w-[min(46vw,40rem)] md:h-[min(56svh,38rem)]"
           >
             <Showroom />
             <motion.div aria-hidden className="absolute inset-0 bg-[#2b120e]" style={{ opacity: dim }} />

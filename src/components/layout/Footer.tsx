@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import logo from '@/assets/logo.jpg'
+import logo from '@/assets/logo.png'
 import { CATEGORIES } from '@/constants/catalog'
 
 export default function Footer() {
@@ -7,7 +7,9 @@ export default function Footer() {
     <footer className="mt-24 bg-burgundy text-blush-soft">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-[1.2fr_1fr_1fr_1fr] lg:px-12">
         <div>
-          <img src={logo} alt="Renté by Kisha" width={160} height={160} loading="lazy" className="size-32 rounded-2xl object-cover" />
+          <span className="grid size-32 place-items-center rounded-2xl bg-blush-soft p-2">
+            <img src={logo} alt="Renté by Kisha" width={160} height={160} loading="lazy" className="size-full object-contain" />
+          </span>
           <p className="mt-4 max-w-xs text-[0.95rem] text-blush">Beautiful dresses for the moments you will remember. Rent it, wear it, return it.</p>
         </div>
         <FooterCol title="Collections">

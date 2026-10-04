@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seed:admin": "node --env-file=.env scripts/seed-admin.mjs"
+    "seed:admin": "node --env-file=.env scripts/seed-admin.mjs",
+    "test": "vitest run",
+    "test:db": "node scripts/test-db.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@electric-sql/pglite": "^0.5.8",
     "@eslint/js": "^10.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@types/babel__core": "^7.20.5",
@@ -42,6 +45,7 @@
     "globals": "^17.12.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.69.0",
-    "vite": "^8.3.0"
+    "vite": "^8.3.0",
+    "vitest": "^5.0.3"
   }
 }
