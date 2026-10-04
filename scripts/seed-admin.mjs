@@ -63,4 +63,4 @@ if (error) {
   )
 }
 console.log(`• ${email} now has the admin role`)
-console.log('\n✔ Done. Sign in at /admin/login with that email and password.\n')
+console.log('\n✔ Done. Sign in at /login with that email and password.\n')

@@ -1,24 +1,25 @@
-import { useEffect } from 'react'
-import { Navigate, NavLink, Outlet } from 'react-router-dom'
+import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { ArrowDown, ArrowUp, LogOut, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Notice } from '@/components/common/States'
 import { ADMIN_NAV } from '@/constants/navigation'
 import { isSupabaseConfigured } from '@/lib/supabase'
-import { adminSignOut, startAdminAuth, useAdmin } from '@/stores/admin'
+import { logout } from '@/lib/api'
+import { useAuthStore } from '@/stores'
 import { cn } from '@/lib/utils'
 import Toaster from '@/components/layout/Toaster'
 
 /** Gate: only signed-in users whose profile role is 'admin' may enter. */
 export function RequireAdmin() {
-  const { ready, uid, isAdmin, email } = useAdmin()
-  useEffect(() => {
-    void startAdminAuth()
-  }, [])
+  const { ready, user, isAdmin } = useAuthStore()
+  const location = useLocation()
+  const uid = user?.id
+  const email = user?.email
 
-  if (!isSupabaseConfigured) return <Navigate to="/admin/login" replace />
+  if (!isSupabaseConfigured) return <Navigate to="/login" replace />
   if (!ready) return <p className="grid min-h-svh place-items-center text-muted">Checking your access…</p>
-  if (!uid) return <Navigate to="/admin/login" replace />
+  // Everyone signs in on the normal login page, admins included.
+  if (!uid) return <Navigate to="/login" replace state={{ from: location.pathname, reason: 'auth' }} />
   if (!isAdmin)
     return (
       <div className="mx-auto grid min-h-svh max-w-lg content-center gap-4 px-5 text-center">
@@ -27,7 +28,7 @@ export function RequireAdmin() {
           {email} is signed in, but does not have the admin role. Ask an existing admin to change your role under Users, or run <code>npm run seed:admin</code>. Your user ID is:
         </p>
         <code className="break-all rounded-xl bg-blush-soft px-3 py-2 text-sm">{uid}</code>
-        <Button variant="secondary" onClick={() => void adminSignOut()}>
+        <Button variant="secondary" onClick={() => void logout()}>
           Sign out
         </Button>
       </div>
@@ -36,7 +37,7 @@ export function RequireAdmin() {
 }
 
 export function AdminLayout() {
-  const email = useAdmin((s) => s.email)
+  const email = useAuthStore((s) => s.user?.email)
   return (
     <div className="min-h-svh bg-cream">
       <header className="border-b border-line bg-ivory">
@@ -48,7 +49,7 @@ export function AdminLayout() {
           <div className="flex items-center gap-1 text-sm">
             <button
               type="button"
-              onClick={() => void adminSignOut()}
+              onClick={() => void logout()}
               className="flex min-h-11 items-center gap-1.5 rounded-full px-3 text-burgundy hover:bg-blush-soft"
               title={email ?? undefined}
             >

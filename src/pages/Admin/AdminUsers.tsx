@@ -5,10 +5,10 @@ import { listUsers, setUserRole, type UserRow } from '@/lib/adminApi'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useToastStore } from '@/stores'
-import { useAdmin } from '@/stores/admin'
+import { useAuthStore } from '@/stores'
 
 export default function AdminUsers() {
-  const me = useAdmin((s) => s.uid)
+  const me = useAuthStore((s) => s.user?.id)
   const push = useToastStore((s) => s.push)
   const [users, setUsers] = useState<UserRow[] | null>(null)
   const [error, setError] = useState('')

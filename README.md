@@ -19,7 +19,7 @@ Dress-rental boutique. React + TypeScript + Vite, Tailwind v4, React Router, Zus
 1. Create a project at supabase.com. In **Project Settings > API** copy the Project URL, the **anon** key and the **service_role** key into `.env`
    (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`). The service-role key is secret: only the seeder uses it, it has no `VITE_` prefix and never reaches the browser.
 2. In **SQL Editor** run `0001_init.sql`, `0002_customers.sql` and `0003_roles.sql` from `supabase/migrations`, in that order. Each is safe to re-run; run 0003 once after 0002 (do not re-run 0001 afterwards, it would recreate the old admins table).
-3. Put `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env` and run `npm run seed:admin`. Sign in at `/admin/login`.
+3. Put `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env` and run `npm run seed:admin`. Sign in at `/login` like everyone else; admins are sent to the dashboard automatically.
 
 ### What the database enforces (not just the UI)
 

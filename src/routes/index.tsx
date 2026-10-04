@@ -21,7 +21,6 @@ const RentalDetail = lazy(() => import('@/pages/Rentals/RentalDetail'))
 const Wishlist = lazy(() => import('@/pages/Wishlist'))
 const Fitting = lazy(() => import('@/pages/Fitting'))
 const HowItWorks = lazy(() => import('@/pages/HowItWorks'))
-const AdminLogin = lazy(() => import('@/pages/Admin/AdminLogin'))
 const AdminRentals = lazy(() => import('@/pages/Admin/AdminRentals'))
 const AdminRentalDetail = lazy(() => import('@/pages/Admin/AdminRentalDetail'))
 const AdminFittings = lazy(() => import('@/pages/Admin/AdminFittings'))
@@ -37,7 +36,6 @@ export default function AppRoutes() {
   return (
     <Suspense fallback={null}>
     <Routes>
-      <Route path="admin/login" element={<AdminLogin />} />
       <Route path="admin" element={<RequireAdmin />}>
         <Route element={<AdminLayout />}>
           <Route index element={<AdminRentals />} />

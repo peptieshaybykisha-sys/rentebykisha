@@ -44,7 +44,7 @@ export default function BoutiqueHero() {
       const W = arch.offsetWidth
       const H = arch.offsetHeight
       const header = vw >= 768 ? 76 : 64
-      const needAbove = header + plaque.offsetHeight * 0.52 + 24 + 40
+      const needAbove = header + Math.max(plaque.offsetHeight * 0.52, 0) + 24 + 56
       endScale.set(Math.max(vw / W, vh / H) * 1.04)
       shift.set(Math.max(0, needAbove - (vh - H) / 2))
     }
@@ -137,7 +137,7 @@ export default function BoutiqueHero() {
           />
 
           {/* doorstep */}
-          <div aria-hidden className="relative mx-auto mt-[2.4rem] h-3 w-[calc(100%+6.4rem)] -translate-x-[3.2rem] rounded-b-md bg-gradient-to-b from-[#f8f0ee] to-[#e6d6d4] shadow-[0_14px_20px_-10px_rgba(90,16,37,0.3)]" />
+          <div aria-hidden className="absolute left-1/2 top-full mt-[2.3rem] h-3 w-[calc(100%+6.4rem)] -translate-x-1/2 rounded-b-md bg-gradient-to-b from-[#f8f0ee] to-[#e6d6d4] shadow-[0_14px_20px_-10px_rgba(90,16,37,0.3)]" />
         </motion.div>
 
         {/* opening prompts */}
