@@ -13,8 +13,8 @@ export const useAdmin = create<AdminState>()(() => ({ email: null, uid: null, is
 
 async function apply(session: Session | null) {
   if (!session || !supabase) return useAdmin.setState({ email: null, uid: null, isAdmin: false, ready: true })
-  const { data } = await supabase.from('admins').select('user_id').eq('user_id', session.user.id).maybeSingle()
-  useAdmin.setState({ email: session.user.email ?? null, uid: session.user.id, isAdmin: !!data, ready: true })
+  const { data } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
+  useAdmin.setState({ email: session.user.email ?? null, uid: session.user.id, isAdmin: data?.role === 'admin', ready: true })
 }
 
 let started: Promise<void> | null = null

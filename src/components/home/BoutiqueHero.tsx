@@ -14,40 +14,11 @@ import logo from '@/assets/logo.png'
 import { DOOR_ANGLES, DOOR_ANGLES_REDUCED, DOOR_PROGRESS } from '@/constants/home'
 import { cn } from '@/lib/utils'
 import { Flowers } from './Decor'
+import Door, { HangingBow } from './Door'
 import Showroom from './Showroom'
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
 const smooth = (t: number) => t * t * (3 - 2 * t)
-
-/** One leaf of the boutique door. `side` decides the hinge. */
-function Door({ side, angle, shade, fade }: { side: 'left' | 'right'; angle: MotionValue<number>; shade: MotionValue<number>; fade: MotionValue<number> }) {
-  const left = side === 'left'
-  const rotateY = useTransform(angle, (a) => (left ? a : -a))
-  return (
-    <motion.div
-      aria-hidden
-      className={cn('absolute inset-y-0 w-1/2 bg-ivory [backface-visibility:hidden]', left ? 'left-0 origin-left' : 'right-0 origin-right')}
-      style={{ rotateY, opacity: fade }}
-    >
-      {/* fan-light arc, which meets its twin in the middle */}
-      <div className={cn('absolute top-[4%] h-[26%] w-[84%] border-gold/50', left ? 'left-[8%] rounded-tl-full border-l border-t' : 'right-[8%] rounded-tr-full border-r border-t')} />
-      <div className={cn('absolute bottom-[5%] top-[31%] flex flex-col gap-[3.5%]', left ? 'left-[8%] right-[6%]' : 'left-[6%] right-[8%]')}>
-        <div className="flex-[3] rounded-sm border border-[#e3d6c4] bg-gradient-to-br from-ivory via-[#fbf5ea] to-[#f2e8d9] shadow-[inset_0_0_0_5px_#fffdf8,inset_0_0_0_6px_#e3d6c4,0_1px_2px_rgba(90,16,37,0.1)]">
-          <div className="m-[14%] h-[72%] rounded-[2px] border border-blush/60" />
-        </div>
-        <div className="flex-[2] rounded-sm border border-[#e3d6c4] bg-gradient-to-br from-ivory via-[#fbf5ea] to-[#f2e8d9] shadow-[inset_0_0_0_5px_#fffdf8,inset_0_0_0_6px_#e3d6c4,0_1px_2px_rgba(90,16,37,0.1)]" />
-      </div>
-      {/* champagne-gold handle */}
-      <div
-        className={cn(
-          'absolute top-[52%] h-[16%] w-[2.6%] min-w-2 -translate-y-1/2 rounded-full bg-gradient-to-b from-[#e4c987] via-gold to-[#9a7a35] shadow-[0_2px_5px_rgba(90,16,37,0.35)]',
-          left ? 'right-[5%]' : 'left-[5%]',
-        )}
-      />
-      <motion.div className="absolute inset-0 bg-[#3a1a14]" style={{ opacity: shade }} />
-    </motion.div>
-  )
-}
 
 export default function BoutiqueHero() {
   const reduce = !!useReducedMotion()

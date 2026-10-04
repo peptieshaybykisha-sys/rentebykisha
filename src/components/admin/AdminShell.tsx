@@ -9,7 +9,7 @@ import { adminSignOut, startAdminAuth, useAdmin } from '@/stores/admin'
 import { cn } from '@/lib/utils'
 import Toaster from '@/components/layout/Toaster'
 
-/** Gate: only signed-in users listed in the admins table may enter. */
+/** Gate: only signed-in users whose profile role is 'admin' may enter. */
 export function RequireAdmin() {
   const { ready, uid, isAdmin, email } = useAdmin()
   useEffect(() => {
@@ -24,7 +24,7 @@ export function RequireAdmin() {
       <div className="mx-auto grid min-h-svh max-w-lg content-center gap-4 px-5 text-center">
         <h1 className="text-4xl">This account is not an admin</h1>
         <p className="text-muted">
-          {email} is signed in, but is not on the admin list. Run <code>npm run seed:admin</code>, or add a row to the <strong>admins</strong> table whose user_id is:
+          {email} is signed in, but does not have the admin role. Ask an existing admin to change your role under Users, or run <code>npm run seed:admin</code>. Your user ID is:
         </p>
         <code className="break-all rounded-xl bg-blush-soft px-3 py-2 text-sm">{uid}</code>
         <Button variant="secondary" onClick={() => void adminSignOut()}>

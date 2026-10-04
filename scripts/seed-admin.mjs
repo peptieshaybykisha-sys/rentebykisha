@@ -1,6 +1,6 @@
 /**
  * Seeds the admin account: creates (or updates) the Supabase Auth user and adds
- * that user to the `admins` table, which is what unlocks /admin.
+ * that user's profile role to 'admin', which is what unlocks /admin.
  *
  *   npm run seed:admin
  *
@@ -8,7 +8,7 @@
  *   VITE_SUPABASE_URL            your project URL
  *   SUPABASE_SERVICE_ROLE_KEY    Project Settings > API > service_role key (SECRET, server-side only)
  *   ADMIN_EMAIL, ADMIN_PASSWORD  the admin login to create
- * Run supabase/migrations/0001_init.sql first. Safe to run more than once.
+ * Run all three migrations in supabase/migrations first. Safe to run more than once.
  */
 import { createClient } from '@supabase/supabase-js'
 
@@ -53,13 +53,14 @@ if (user) {
   console.log(`• Created user ${email}`)
 }
 
-const { error } = await supabase.from('admins').upsert({ user_id: user.id, email })
+// The profile row is created by a trigger when the user is created; make sure it exists, then grant the role.
+const { error } = await supabase.from('profiles').upsert({ id: user.id, email, role: 'admin' })
 if (error) {
   fail(
-    /relation|does not exist|schema cache/i.test(error.message)
-      ? 'The admins table is missing. Run supabase/migrations/0001_init.sql in the SQL Editor first, then run this again.'
-      : `Could not add the admin: ${error.message}`,
+    /relation|does not exist|schema cache|column/i.test(error.message)
+      ? 'The profiles table or its role column is missing. Run all three files in supabase/migrations (0001, 0002, 0003) in the SQL Editor, then run this again.'
+      : `Could not grant the admin role: ${error.message}`,
   )
 }
-console.log(`• Added ${email} to the admins table`)
+console.log(`• ${email} now has the admin role`)
 console.log('\n✔ Done. Sign in at /admin/login with that email and password.\n')

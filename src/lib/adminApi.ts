@@ -1,4 +1,4 @@
-/** Admin-only writes to Supabase. Row level security rejects anyone who is not in the admins table. */
+/** Admin-only writes to Supabase. Row level security rejects anyone whose profile role is not admin. */
 import { PHOTO_BUCKET, supabase } from './supabase'
 import { imageToBlob } from './image'
 import { fittingFromRow, rentalFromRow } from './mappers'
@@ -87,4 +87,32 @@ export async function deleteFitting(id: string) {
 export async function adminReceiptUrl(path: string): Promise<string | null> {
   const { data } = await client().storage.from('receipts').createSignedUrl(path, 3600)
   return data?.signedUrl ?? null
+}
+
+/* ---------------- users and roles (admin) ---------------- */
+export interface UserRow {
+  id: string
+  email: string
+  name: string
+  phone: string
+  role: 'customer' | 'admin'
+  createdAt: string
+}
+
+export async function listUsers(): Promise<UserRow[]> {
+  const { data, error } = await client().from('profiles').select('id, email, name, phone, role, created_at').order('created_at', { ascending: false }).limit(1000)
+  check(error)
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    email: r.email ?? '',
+    name: r.name ?? '',
+    phone: r.phone ?? '',
+    role: r.role,
+    createdAt: r.created_at,
+  }))
+}
+
+/** Enforced in the database: admin only, and you cannot remove your own admin access. */
+export async function setUserRole(id: string, role: 'customer' | 'admin') {
+  check((await client().rpc('set_user_role', { p_user: id, p_role: role })).error)
 }

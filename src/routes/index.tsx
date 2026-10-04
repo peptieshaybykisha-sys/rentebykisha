@@ -25,6 +25,7 @@ const AdminLogin = lazy(() => import('@/pages/Admin/AdminLogin'))
 const AdminRentals = lazy(() => import('@/pages/Admin/AdminRentals'))
 const AdminRentalDetail = lazy(() => import('@/pages/Admin/AdminRentalDetail'))
 const AdminFittings = lazy(() => import('@/pages/Admin/AdminFittings'))
+const AdminUsers = lazy(() => import('@/pages/Admin/AdminUsers'))
 const DressList = lazy(() => import('@/pages/Admin/DressList'))
 const DressForm = lazy(() => import('@/pages/Admin/DressForm'))
 const SizeGuideEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.SizeGuideEditor })))
@@ -43,6 +44,7 @@ export default function AppRoutes() {
           <Route path="rentals/:id" element={<AdminRentalDetail />} />
           <Route path="dresses" element={<DressList />} />
           <Route path="fittings" element={<AdminFittings />} />
+          <Route path="users" element={<AdminUsers />} />
           <Route path="dresses/:id" element={<DressForm />} />
           <Route path="hero" element={<HeroEditor />} />
           <Route path="size-guide" element={<SizeGuideEditor />} />
