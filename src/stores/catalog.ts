@@ -42,18 +42,27 @@ export function dressFromRow(r: Record<string, unknown>): Dress {
   }
 }
 
+/** Re-reads the catalogue, e.g. after a checkout changes which dates are reserved. */
+export async function refreshCatalog() {
+  await load()
+}
+
 async function load() {
   if (!supabase) return
-  const [dresses, settings] = await Promise.all([
+  const [dresses, settings, reserved] = await Promise.all([
     supabase.from('dresses').select('*').order('created_at', { ascending: true }),
     supabase.from('settings').select('key, value'),
+    supabase.rpc('dress_reserved_ranges'),
   ])
+  const byDress = new Map<string, Dress['bookedRanges']>()
+  for (const r of (reserved.data ?? []) as { dress_id: string; start_date: string; end_date: string }[])
+    byDress.set(r.dress_id, [...(byDress.get(r.dress_id) ?? []), { start: r.start_date, end: r.end_date }])
   if (dresses.error) {
     useCatalog.setState({ status: 'error', settingsReady: true })
     return
   }
   const next: Partial<CatalogState> = {
-    dresses: dresses.data.map(dressFromRow),
+    dresses: dresses.data.map((r) => ({ ...dressFromRow(r), reservedRanges: byDress.get(String(r.id)) ?? [] })),
     status: 'ready',
     settingsReady: true,
     sizeGuide: null,
@@ -80,4 +89,6 @@ export function startCatalog() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'dresses' }, () => void load())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => void load())
     .subscribe()
+  // Reserved dates change when other customers book, and customers cannot subscribe to rentals.
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && void load())
 }

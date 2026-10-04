@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { Address, CartItem, CustomerInfo, FittingAppointment, Fulfillment, Rental, User } from '@/types'
+import type { CartItem, CustomerInfo, Fulfillment } from '@/types'
+
+export { useAuthStore } from './auth'
+export { useWishlistStore } from './wishlist'
 
 /* ---------- Cart ---------- */
 interface CartState {
@@ -28,35 +31,6 @@ export const useCartStore = create<CartState>()(
   ),
 )
 
-/* ---------- Wishlist ---------- */
-interface WishlistState {
-  ids: string[]
-  toggle: (id: string) => void
-}
-
-export const useWishlistStore = create<WishlistState>()(
-  persist(
-    (set) => ({
-      ids: [],
-      toggle: (id) => set((s) => ({ ids: s.ids.includes(id) ? s.ids.filter((x) => x !== id) : [...s.ids, id] })),
-    }),
-    { name: 'rente-wishlist' },
-  ),
-)
-
-/* ---------- Session ---------- */
-interface AuthState {
-  user: User | null
-  setUser: (u: User | null) => void
-}
-
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({ user: null, setUser: (user) => set({ user }) }),
-    { name: 'rente-session' },
-  ),
-)
-
 /* ---------- Checkout draft (rental selections) ---------- */
 interface CheckoutState {
   customer: CustomerInfo
@@ -77,30 +51,6 @@ export const useCheckoutStore = create<CheckoutState>()(
       reset: () => set(emptyDraft),
     }),
     { name: 'rente-checkout' },
-  ),
-)
-
-/* ---------- Mock database (stands in for the backend) ---------- */
-export interface StoredUser extends User {
-  password: string // demo only — a real backend stores a hash
-}
-
-interface MockDbState {
-  users: StoredUser[]
-  rentals: Rental[]
-  fittings: FittingAppointment[]
-  addresses: Record<string, Address[]>
-}
-
-export const useMockDb = create<MockDbState>()(
-  persist(
-    () => ({
-      users: [] as StoredUser[],
-      rentals: [] as Rental[],
-      fittings: [] as FittingAppointment[],
-      addresses: {} as Record<string, Address[]>,
-    }),
-    { name: 'rente-mockdb' },
   ),
 )
 

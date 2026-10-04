@@ -10,5 +10,3 @@ export const EXTRA_DAY_RATE = 0.2
 export const DELIVERY_FEE = 150
 /** Days the team needs to prepare a dress before pick-up. */
 export const LEAD_DAYS = 2
-
-export const DEMO_LOGIN = { email: 'demo@rente.ph', password: 'password123' }

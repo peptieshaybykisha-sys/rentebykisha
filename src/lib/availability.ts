@@ -9,8 +9,10 @@ export const earliestPickup = () => addDays(startOfDay(new Date()), LEAD_DAYS)
 const overlaps = (a: { start: Date; end: Date }, r: { start: string; end: string }) =>
   areIntervalsOverlapping(a, { start: fromISODate(r.start), end: fromISODate(r.end) }, { inclusive: true })
 
+const allRanges = (dress: Dress) => [...dress.bookedRanges, ...(dress.reservedRanges ?? [])]
+
 export function isDayBooked(dress: Dress, day: Date) {
-  return dress.bookedRanges.some((r) => overlaps({ start: day, end: day }, r))
+  return allRanges(dress).some((r) => overlaps({ start: day, end: day }, r))
 }
 
 /** Day cannot be picked at all (past, too soon, booked, or dress unavailable). */
@@ -33,7 +35,7 @@ export function checkAvailability(dress: Dress, start?: string, end?: string): A
     return { state: 'unavailable', reason: `We need ${LEAD_DAYS} days to prepare your dress. Please choose a later pick-up date.` }
   if (rentalDays(start, end) > MAX_DAYS)
     return { state: 'unavailable', reason: `Rentals can be up to ${MAX_DAYS} days. Please shorten your dates.` }
-  const clash = dress.bookedRanges.find((r) => overlaps({ start: s, end: e }, r))
+  const clash = allRanges(dress).find((r) => overlaps({ start: s, end: e }, r))
   if (clash)
     return {
       state: 'unavailable',

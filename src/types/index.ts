@@ -26,7 +26,10 @@ export interface Dress {
   details: string[]
   images: DressImage[]
   status: 'available' | 'unavailable'
+  /** Dates the admin blocked by hand. */
   bookedRanges: DateRange[]
+  /** Dates reserved by customer rentals (read-only, from the database). */
+  reservedRanges?: DateRange[]
   featured?: boolean
   createdAt?: number
 }
@@ -61,7 +64,6 @@ export interface Address {
   label: string
   line1: string
   city: string
-  notes?: string
 }
 
 export interface User {
@@ -107,7 +109,7 @@ export interface Rental {
   totals: Totals
   paymentStatus: PaymentStatus
   status: RentalStatus
-  receipt?: { name: string; dataUrl: string }
+  receiptPath?: string // private Storage path, opened with a signed URL
   history: { status: RentalStatus; at: string }[]
 }
 
