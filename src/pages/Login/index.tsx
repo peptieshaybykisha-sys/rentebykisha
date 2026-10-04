@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,6 +8,7 @@ import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Field'
 import { login } from '@/lib/api'
+import { useAuthStore } from '@/stores'
 
 const schema = z.object({
   email: z.string().min(1, 'Please enter your email.').email('That email does not look right.'),
@@ -16,10 +17,11 @@ const schema = z.object({
 type Values = z.infer<typeof schema>
 
 export default function Login() {
-  const navigate = useNavigate()
   const location = useLocation()
   const state = location.state as { from?: string; reason?: string } | null
   const [error, setError] = useState('')
+  const user = useAuthStore((s) => s.user)
+  const isAdmin = useAuthStore((s) => s.isAdmin)
   const {
     register,
     handleSubmit,
@@ -29,12 +31,14 @@ export default function Login() {
   const onSubmit = async (v: Values) => {
     setError('')
     try {
-      await login(v.email, v.password)
-      navigate(state?.from ?? '/account', { replace: true })
+      await login(v.email, v.password) // the redirect below happens once the session and admin check finish
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
     }
   }
+
+  // Signed in (now or already): admins go to the dashboard, customers to where they were headed.
+  if (user) return <Navigate to={state?.from ?? (isAdmin ? '/admin' : '/account')} replace />
 
   return (
     <AuthShell title="Welcome Back">

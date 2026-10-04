@@ -5,18 +5,24 @@ import type { User } from '@/types'
 
 interface AuthState {
   user: User | null
+  /** True when this account is listed in the admins table. */
+  isAdmin: boolean
   /** False until the saved session has been checked, so guards do not redirect too early. */
   ready: boolean
 }
 
-export const useAuthStore = create<AuthState>()(() => ({ user: null, ready: false }))
+export const useAuthStore = create<AuthState>()(() => ({ user: null, ready: false, isAdmin: false }))
 
 export async function applySession(session: Session | null) {
-  if (!session || !supabase) return useAuthStore.setState({ user: null, ready: true })
-  const { data: profile } = await supabase.from('profiles').select('name, phone').eq('id', session.user.id).maybeSingle()
+  if (!session || !supabase) return useAuthStore.setState({ user: null, ready: true, isAdmin: false })
+  const [{ data: profile }, { data: admin }] = await Promise.all([
+    supabase.from('profiles').select('name, phone').eq('id', session.user.id).maybeSingle(),
+    supabase.from('admins').select('user_id').eq('user_id', session.user.id).maybeSingle(),
+  ])
   const meta = session.user.user_metadata as { name?: string; phone?: string }
   useAuthStore.setState({
     ready: true,
+    isAdmin: !!admin,
     user: {
       id: session.user.id,
       email: session.user.email ?? '',

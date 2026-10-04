@@ -1,4 +1,4 @@
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { ACCOUNT_TABS } from '@/constants/navigation'
 import Container from '@/components/common/Container'
 import { Button } from '@/components/ui/Button'
@@ -11,6 +11,7 @@ export default function Account() {
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)!
+  const isAdmin = useAuthStore((s) => s.isAdmin)
   const tab = ACCOUNT_TABS.some((t) => t.id === params.get('tab')) ? params.get('tab')! : 'profile'
   const current = ACCOUNT_TABS.find((t) => t.id === tab)!
 
@@ -20,6 +21,16 @@ export default function Account() {
         <p className="font-script-title text-3xl text-burgundy-soft">Hello,</p>
         <h1 className="text-5xl sm:text-6xl">{user.name.split(' ')[0]}</h1>
       </header>
+
+      {isAdmin && (
+        <Link to="/admin" className="mb-8 flex items-center justify-between gap-4 rounded-2xl bg-burgundy px-5 py-4 text-ivory transition-colors hover:bg-burgundy-soft">
+          <span>
+            <span className="block font-serif text-2xl">You are signed in as an admin</span>
+            <span className="text-sm text-blush">Manage rentals, dresses and site content</span>
+          </span>
+          <span aria-hidden>→</span>
+        </Link>
+      )}
 
       <div className="grid gap-8 md:grid-cols-[15rem_1fr] lg:gap-14">
         <nav aria-label="Account sections" className="-mx-5 overflow-x-auto px-5 no-scrollbar md:mx-0 md:px-0">
