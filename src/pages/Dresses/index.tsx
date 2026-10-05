@@ -1,12 +1,15 @@
 import { useSearchParams } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import Container, { PageTitle } from '@/components/common/Container'
+import Pagination from '@/components/common/Pagination'
 import { EmptyState } from '@/components/common/States'
 import CategoryTabs, { type CategoryFilter } from '@/components/dresses/CategoryTabs'
 import DressGrid from '@/components/dresses/DressGrid'
 import { CATEGORIES } from '@/constants/catalog'
 import { DressGridSkeleton } from '@/components/ui/Skeleton'
 import { useCatalogStatus, useDressList, useDresses } from '@/hooks/useDresses'
+
+const PAGE_SIZE = 12
 
 export default function Dresses() {
   const [params, setParams] = useSearchParams()
@@ -23,6 +26,7 @@ export default function Dresses() {
         const n = new URLSearchParams(p)
         if (value && value !== 'All') n.set(key, value)
         else n.delete(key)
+        if (key !== 'page') n.delete('page')
         return n
       },
       { replace: true },
@@ -31,6 +35,14 @@ export default function Dresses() {
   const loading = useCatalogStatus() === 'loading'
   const base = useDresses({ category, query: q, availableOnly })
   const list = size ? base.filter((d) => d.sizes.includes(size)) : base
+
+  const pageCount = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
+  const page = Math.min(Math.max(1, Number(params.get('page')) || 1), pageCount)
+  const visible = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const goToPage = (p: number) => {
+    set('page', p > 1 ? String(p) : '')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <Container className="pb-8">
@@ -86,7 +98,10 @@ export default function Dresses() {
         {loading ? (
           <DressGridSkeleton />
         ) : list.length ? (
-          <DressGrid dresses={list} />
+          <>
+            <DressGrid dresses={visible} />
+            <Pagination page={page} pageCount={pageCount} onChange={goToPage} />
+          </>
         ) : (
           <EmptyState title="No dresses match that" to="/dresses" cta="Clear filters">
             Try a different colour, size or occasion.

@@ -11,7 +11,7 @@ export default function Collections() {
   return (
     <Container className="pb-8">
       <PageTitle script="The lookbook" title="Collections">
-        Six ways to dress for the moment.
+        Two ways to dress for the moment.
       </PageTitle>
       {loading ? (
         <DressGridSkeleton count={8} />
@@ -32,13 +32,20 @@ export default function Collections() {
                   View all →
                 </Link>
               </div>
-              <ul className="no-scrollbar -mx-5 flex snap-x gap-5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-4">
-                {list.slice(0, 4).map((d) => (
-                  <li key={d.id} className="w-[62vw] max-w-[18rem] shrink-0 snap-start sm:w-auto sm:max-w-none">
-                    <DressCard dress={d} />
-                  </li>
-                ))}
-              </ul>
+              {list.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-line py-14 text-center">
+                  <span className="text-xs font-medium uppercase tracking-[0.3em] text-burgundy">Coming soon</span>
+                  <p className="mt-2 text-muted">New {c.toLowerCase()} styles are on their way.</p>
+                </div>
+              ) : (
+                <ul className="no-scrollbar -mx-5 flex snap-x gap-5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-4">
+                  {list.slice(0, 4).map((d) => (
+                    <li key={d.id} className="w-[62vw] max-w-[18rem] shrink-0 snap-start sm:w-auto sm:max-w-none">
+                      <DressCard dress={d} />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           )
         })}

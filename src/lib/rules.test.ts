@@ -10,7 +10,7 @@ import type { Dress } from '@/types'
 const dress = (over: Partial<Dress> = {}): Dress => ({
   id: 'd1',
   name: 'Gown',
-  category: 'Evening',
+  category: 'Long Dress',
   colorName: 'Red',
   price: 900,
   deposit: 1000,
@@ -103,7 +103,7 @@ describe('row mapping', () => {
       total: 1900,
       receipt_path: 'u1/1.jpg',
       history: [],
-      rental_items: [{ dress_id: 'd1', dress_name: 'Gown', category: 'Evening', size: 'M', start_date: '2026-10-18', end_date: '2026-10-20', rental_fee: 900, deposit: 1000 }],
+      rental_items: [{ dress_id: 'd1', dress_name: 'Gown', category: 'Long Dress', size: 'M', start_date: '2026-10-18', end_date: '2026-10-20', rental_fee: 900, deposit: 1000 }],
     })
     expect(r.totals).toEqual({ rentalFee: 900, deposit: 1000, delivery: 0, total: 1900 })
     expect(r.items[0]).toMatchObject({ name: 'Gown', size: 'M', startDate: '2026-10-18' })
