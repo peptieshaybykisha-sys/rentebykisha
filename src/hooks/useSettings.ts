@@ -1,25 +1,37 @@
 import { useMemo } from 'react'
+import defaultShowroom from '@/assets/closets1.jpg'
+import { DEFAULT_SHOWROOM } from '@/constants/home'
 import { DEFAULT_HOW_IT_WORKS } from '@/constants/howItWorks'
 import { DEFAULT_NAVIGATION } from '@/constants/navigation'
 import { useCatalog } from '@/stores/catalog'
-import type { Dress } from '@/types'
 
 export const useHowItWorks = () => useCatalog((s) => s.howItWorks) ?? DEFAULT_HOW_IT_WORKS
 
 export const useNavigation = () => useCatalog((s) => s.navigation) ?? DEFAULT_NAVIGATION
 
-export const hasPhoto = (d: Dress) => d.images.length > 0
+export const useTerms = () => useCatalog((s) => s.terms)
 
-/** Dresses shown behind the boutique doors: the admin's picks, else featured, else any with photos. */
-export function useHeroDresses(): Dress[] {
-  const dresses = useCatalog((s) => s.dresses)
+export interface ShowroomView {
+  src: string
+  focusX: number
+  focusY: number
+  zoom: number
+  brightness: number
+}
+
+const num = (v: unknown, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? v : fallback)
+
+/** The photo behind the boutique doors: the admin's upload and adjustments, else the built-in closet photo. */
+export function useShowroom(): ShowroomView {
   const hero = useCatalog((s) => s.hero)
-  return useMemo(() => {
-    const picked = (hero?.dressIds ?? [])
-      .map((id) => dresses.find((d) => d.id === id))
-      .filter((d): d is Dress => !!d && hasPhoto(d))
-    if (picked.length) return picked.slice(0, 5)
-    const withPhoto = dresses.filter(hasPhoto)
-    return [...withPhoto.filter((d) => d.featured), ...withPhoto.filter((d) => !d.featured)].slice(0, 5)
-  }, [dresses, hero])
+  return useMemo(
+    () => ({
+      src: hero?.image?.url || defaultShowroom,
+      focusX: num(hero?.focusX, DEFAULT_SHOWROOM.focusX),
+      focusY: num(hero?.focusY, DEFAULT_SHOWROOM.focusY),
+      zoom: num(hero?.zoom, DEFAULT_SHOWROOM.zoom),
+      brightness: num(hero?.brightness, DEFAULT_SHOWROOM.brightness),
+    }),
+    [hero],
+  )
 }

@@ -13,7 +13,7 @@ import { ChevronDown } from 'lucide-react'
 import logo from '@/assets/logo.png'
 import { DOOR_ANGLES, DOOR_ANGLES_REDUCED, DOOR_PROGRESS } from '@/constants/home'
 import { cn } from '@/lib/utils'
-import Door, { DoorFrame } from './Door'
+import Door, { DoorFrame, Fanlight, Spandrel } from './Door'
 import Showroom from './Showroom'
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
@@ -52,6 +52,8 @@ export default function BoutiqueHero() {
   const angle = useTransform(p, DOOR_PROGRESS, reduce ? DOOR_ANGLES_REDUCED : DOOR_ANGLES)
   const doorShade = useTransform(p, [0, 1], [0, 0.55])
   const doorFade = useTransform(p, reduce ? [0.1, 0.5] : [0, 1], reduce ? [1, 0] : [1, 1])
+  // the fixed fanlight and door heads dissolve as the doors swing clear
+  const headFade = useTransform(p, reduce ? [0.1, 0.5] : [0.55, 0.85], [1, 0])
   const dim = useTransform(p, [0, 0.2, 0.6], [0.75, 0.6, 0])
   const glow = useTransform(p, [0, 0.2, 0.55], [0, 0.9, 0.5])
   const seamW = useTransform(p, [0, 0.12, 0.4], [2, 10, 60])
@@ -79,21 +81,21 @@ export default function BoutiqueHero() {
   return (
     <section ref={sectionRef} aria-label="Boutique entrance" className={cn('relative', reduce ? 'h-[150svh]' : 'h-[190svh]')}>
       <h1 className="sr-only">Renté by Kisha — dress rental boutique</h1>
-      <div className="sticky top-0 h-svh overflow-hidden bg-cream [--hero-shift:max(0px,calc(64px+0.52*min(40vw,10rem)+80px-(100svh-min(52svh,36rem))/2))] md:[--hero-shift:max(0px,calc(76px+5.72rem+80px-(100svh-min(60svh,40rem))/2))]">
+      <div className="sticky top-0 h-svh overflow-hidden bg-cream [--hero-shift:max(0px,calc(64px+4.6rem+80px-(100svh-min(52svh,36rem))/2))] md:[--hero-shift:max(0px,calc(76px+4.8rem+80px-(100svh-min(60svh,40rem))/2))]">
         {/* The stage: wall, sign, doorway. It is dollied toward the doorway as the doors open. */}
         <motion.div className="absolute left-1/2 top-1/2 origin-center" style={{ x: '-50%', y, scale }}>
           <div aria-hidden className="absolute -inset-[200vmax] -z-10 bg-gradient-to-b from-[#faf2f1] via-[#f3e4e4] to-[#ead6d6]" />
 
-          {/* boutique sign: hangs above the doorway */}
-          <div className="absolute bottom-full left-1/2 z-20 -mb-[min(21vw,5.2rem)] -translate-x-1/2 md:-mb-[5.4rem]">
-            <div ref={plaqueRef} className="aspect-square w-[min(40vw,10rem)] md:w-[11rem]">
-              <img src={logo} alt="Renté by Kisha" width={500} height={500} fetchPriority="high" className="size-full object-contain drop-shadow-[0_18px_18px_rgba(90,16,37,0.3)]" />
+          {/* boutique sign: hangs by its chain from the keystone, in front of the fanlight */}
+          <div className="absolute left-1/2 top-0 z-20 -mt-[2.6rem] -translate-x-1/2">
+            <div ref={plaqueRef} className="dr-sway aspect-square w-[min(40vw,10rem)] md:w-[12rem]">
+              <img src={logo} alt="Renté by Kisha" width={500} height={500} fetchPriority="high" className="size-full object-contain drop-shadow-[0_14px_14px_rgba(90,16,37,0.35)]" />
             </div>
           </div>
 
           {/* wall mouldings, floor and the plaster architrave */}
-          <div aria-hidden className="dr-wallpanel -left-[calc(15rem+5rem)] hidden md:block" />
-          <div aria-hidden className="dr-wallpanel -right-[calc(15rem+5rem)] hidden md:block" />
+          <div aria-hidden className="dr-wallpanel -left-[calc(15rem+8.5rem)] hidden md:block" />
+          <div aria-hidden className="dr-wallpanel -right-[calc(15rem+8.5rem)] hidden md:block" />
           <div aria-hidden className="dr-floor" />
           <DoorFrame />
 
@@ -101,7 +103,7 @@ export default function BoutiqueHero() {
           <div
             ref={archRef}
             onClick={opened ? undefined : openDoors}
-            className="relative h-[min(52svh,36rem)] w-[min(88vw,26rem)] cursor-pointer overflow-hidden rounded-t-[999px] bg-[#f3dcc0] shadow-[inset_0_0_14px_rgba(70,20,34,0.45)] [perspective:1300px] md:aspect-[5/8] md:h-[min(60svh,40rem)] md:w-auto"
+            className="relative flex h-[min(52svh,36rem)] w-[min(88vw,26rem)] cursor-pointer flex-col overflow-hidden rounded-t-[999px] bg-[#f3dcc0] shadow-[inset_0_0_14px_rgba(70,20,34,0.45)] md:aspect-[5/8] md:h-[min(60svh,40rem)] md:w-auto"
           >
             <Showroom />
             <motion.div aria-hidden className="absolute inset-0 bg-[#2b120e]" style={{ opacity: dim }} />
@@ -110,14 +112,19 @@ export default function BoutiqueHero() {
               className="absolute inset-0 [background:radial-gradient(70%_60%_at_50%_58%,rgba(255,224,160,0.85),transparent)] mix-blend-soft-light"
               style={{ opacity: glow }}
             />
-            <Door side="left" angle={angle} shade={doorShade} fade={doorFade} />
-            <Door side="right" angle={angle} shade={doorShade} fade={doorFade} />
-            {/* warm light through the seam */}
-            <motion.div
-              aria-hidden
-              className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 bg-gradient-to-b from-[#ffe9b8] via-[#ffd98a] to-[#ffe9b8] blur-[3px]"
-              style={{ width: seamW, opacity: seamOpacity }}
-            />
+            <Fanlight fade={headFade} />
+            <div className="relative min-h-0 flex-1 [perspective:1300px]">
+              <Spandrel side="left" fade={headFade} />
+              <Spandrel side="right" fade={headFade} />
+              <Door side="left" angle={angle} shade={doorShade} fade={doorFade} />
+              <Door side="right" angle={angle} shade={doorShade} fade={doorFade} />
+              {/* warm light through the seam */}
+              <motion.div
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 bg-gradient-to-b from-[#ffe9b8] via-[#ffd98a] to-[#ffe9b8] blur-[3px]"
+                style={{ width: seamW, opacity: seamOpacity }}
+              />
+            </div>
           </div>
 
           {/* sunlight falling across the doorway */}
@@ -128,7 +135,7 @@ export default function BoutiqueHero() {
           />
 
           {/* doorstep */}
-          <div aria-hidden className="absolute left-1/2 top-full mt-[2.3rem] h-3 w-[calc(100%+6.4rem)] -translate-x-1/2 rounded-b-md bg-gradient-to-b from-[#f8f0ee] to-[#e6d6d4] shadow-[0_14px_20px_-10px_rgba(90,16,37,0.3)]" />
+          <div aria-hidden className="absolute left-1/2 top-full mt-[2.3rem] h-3 w-[calc(100%+6.4rem)] md:w-[calc(100%+16rem)] -translate-x-1/2 rounded-b-md bg-gradient-to-b from-[#f8f0ee] to-[#e6d6d4] shadow-[0_14px_20px_-10px_rgba(90,16,37,0.3)]" />
         </motion.div>
 
         {/* opening prompts */}
@@ -136,7 +143,6 @@ export default function BoutiqueHero() {
           style={{ opacity: introOpacity, y: introY }}
           className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--bottom-nav-h)+0.75rem)] z-10 flex flex-col items-center text-center md:bottom-7"
         >
-          <p className="text-[0.8rem] font-medium uppercase tracking-[0.32em] text-burgundy md:text-sm">Discover the collection</p>
           <button
             type="button"
             onClick={openDoors}

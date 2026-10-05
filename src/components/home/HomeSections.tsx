@@ -50,7 +50,7 @@ export function CollectionSection() {
 
 export function OccasionSection() {
   const dresses = useDressList()
-  const [active, setActive] = useState<Category>('Evening')
+  const [active, setActive] = useState<Category>('Long Dress')
   const sample = dresses.find((d) => d.category === active && d.images.length && d.status === 'available') ?? dresses.find((d) => d.images.length)
   return (
     <section aria-labelledby="occasion-title" className="mt-24 bg-blush-soft/60 py-20 sm:py-28">

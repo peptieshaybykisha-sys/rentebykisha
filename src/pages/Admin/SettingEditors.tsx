@@ -1,20 +1,20 @@
-import { useState, type ReactNode } from 'react'
-import { Plus } from 'lucide-react'
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
+import { ImagePlus, Plus, Trash2 } from 'lucide-react'
 import { MoveButtons, NotConfigured } from '@/components/admin/AdminShell'
+import { ShowroomImage } from '@/components/home/Showroom'
+import defaultShowroom from '@/assets/closets1.jpg'
 import { Notice } from '@/components/common/States'
-import DressPhoto from '@/components/dresses/DressPhoto'
 import { Button } from '@/components/ui/Button'
 import { ListSkeleton } from '@/components/ui/Skeleton'
 import { Input, Select, Textarea } from '@/components/ui/Field'
-import { HERO_MAX_DRESSES, HERO_SLOT_NAMES } from '@/constants/home'
+import { DEFAULT_SHOWROOM, SHOWROOM_LIMITS } from '@/constants/home'
 import { DEFAULT_HOW_IT_WORKS, MAX_STEPS, STEP_ICON_NAMES, STEP_ICONS } from '@/constants/howItWorks'
-import { useDressList } from '@/hooks/useDresses'
-import { saveSetting } from '@/lib/adminApi'
+import { deleteImages, saveSetting, uploadShowroomImage, uploadTermsImage } from '@/lib/adminApi'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { move } from '@/lib/utils'
 import { notify } from '@/lib/toast'
 import { useCatalog } from '@/stores/catalog'
-import type { HowItWorksContent, NavigationContent, NavItem, StepIconName } from '@/types'
+import type { HeroContent, HowItWorksContent, NavigationContent, NavItem, StepIconName, TermsContent } from '@/types'
 import { DEFAULT_NAVIGATION, MAX_FOOTER_COLUMNS, MAX_FOOTER_ITEMS, MAX_NAV_LINKS } from '@/constants/navigation'
 
 /** Wraps an editor: waits for the saved content, then offers one Save button. */
@@ -61,81 +61,172 @@ function useReadyGuard() {
   return { ready, configured: isSupabaseConfigured }
 }
 
-/* ---------------- Hero dresses ---------------- */
+/* ---------------- Showroom photo ---------------- */
 
 export function HeroEditor() {
   const { ready, configured } = useReadyGuard()
   const saved = useCatalog((s) => s.hero)
   if (!configured) return <NotConfigured />
   if (!ready) return <ListSkeleton rows={3} label="Loading…" />
-  return <HeroForm initial={saved?.dressIds ?? []} />
+  return <HeroForm initial={saved} />
 }
 
-function HeroForm({ initial }: { initial: string[] }) {
-  const dresses = useDressList()
-  const [ids, setIds] = useState<string[]>(() => initial.filter((id) => dresses.some((d) => d.id === id)))
-  const chosen = ids.map((id) => dresses.find((d) => d.id === id)!).filter(Boolean)
-  const options = dresses.filter((d) => !ids.includes(d.id))
+function Slider({ label, value, min, max, step, onChange, format }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; format: (v: number) => string }) {
+  const id = useId()
+  return (
+    <div>
+      <div className="mb-1 flex items-baseline justify-between">
+        <label htmlFor={id} className="text-sm font-medium text-ink">
+          {label}
+        </label>
+        <output htmlFor={id} className="text-sm text-muted">
+          {format(value)}
+        </output>
+      </div>
+      <input id={id} type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="h-11 w-full accent-burgundy" />
+    </div>
+  )
+}
+
+function HeroForm({ initial }: { initial: HeroContent | null }) {
+  const fileInput = useRef<HTMLInputElement>(null)
+  const [image, setImage] = useState(initial?.image ?? null)
+  const [file, setFile] = useState<File | null>(null)
+  const [adj, setAdj] = useState({
+    focusX: initial?.focusX ?? DEFAULT_SHOWROOM.focusX,
+    focusY: initial?.focusY ?? DEFAULT_SHOWROOM.focusY,
+    zoom: initial?.zoom ?? DEFAULT_SHOWROOM.zoom,
+    brightness: initial?.brightness ?? DEFAULT_SHOWROOM.brightness,
+  })
+
+  const preview = useMemo(() => (file ? URL.createObjectURL(file) : ''), [file])
+  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
+
+  const view = { ...adj, src: preview || image?.url || defaultShowroom }
+  const usingDefault = !preview && !image
+  const set = (k: keyof typeof adj) => (v: number) => setAdj((a) => ({ ...a, [k]: v }))
+
+  const save = async () => {
+    const uploaded = file ? await uploadShowroomImage(file) : null
+    const next = uploaded ?? image
+    await saveSetting('hero', { image: next, ...adj } satisfies HeroContent)
+    // Tidy up the previous upload once the new setting is safely saved.
+    if (initial?.image && initial.image.path !== next?.path) void deleteImages([initial.image.path])
+    setFile(null)
+    setImage(next)
+  }
 
   return (
     <EditorFrame
-      title="Hero dresses"
-      intro="These dresses stand behind the boutique doors on the home page. The first is the centre piece. Up to five. If you choose none, we show your featured dresses."
-      onSave={() => saveSetting('hero', { dressIds: ids })}
+      title="Showroom photo"
+      intro="This is the room guests see when the boutique doors open on the home page. Upload your own photo and fine-tune how it sits in the doorway. If there is no photo, we show our default one."
+      onSave={save}
     >
-      <section aria-labelledby="chosen">
-        <h2 id="chosen" className="mb-3 font-sans text-lg font-medium text-ink">
-          On display ({ids.length}/{HERO_MAX_DRESSES})
-        </h2>
-        {chosen.length === 0 ? (
-          <p className="text-muted">Nothing chosen yet.</p>
-        ) : (
-          <ol className="space-y-2">
-            {chosen.map((d, i) => (
-              <li key={d.id} className="flex items-center gap-3 rounded-2xl border border-line bg-ivory p-2 pr-3">
-                <span className="block h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-blush-soft">
-                  <DressPhoto dress={d} className="size-full object-cover" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-serif text-xl text-burgundy">{d.name}</span>
-                  <span className="text-sm text-muted">{HERO_SLOT_NAMES[i]}</span>
-                </span>
-                <MoveButtons index={i} count={ids.length} label={d.name} onMove={(to) => setIds(move(ids, i, to))} onRemove={() => setIds(ids.filter((x) => x !== d.id))} />
-              </li>
-            ))}
-          </ol>
-        )}
+      <section aria-labelledby="preview" className="grid gap-6 sm:grid-cols-[auto_1fr]">
+        <div>
+          <h2 id="preview" className="mb-3 font-sans text-lg font-medium text-ink">
+            Preview
+          </h2>
+          <div className="flex items-end gap-4">
+            <figure>
+              <div className="relative aspect-[5/8] w-40 overflow-hidden rounded-t-full bg-blush-soft ring-1 ring-line">
+                <ShowroomImage {...view} />
+              </div>
+              <figcaption className="mt-1.5 text-center text-xs text-muted">Computer</figcaption>
+            </figure>
+            <figure>
+              <div className="relative aspect-[4/5] w-32 overflow-hidden rounded-t-full bg-blush-soft ring-1 ring-line">
+                <ShowroomImage {...view} />
+              </div>
+              <figcaption className="mt-1.5 text-center text-xs text-muted">Phone</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <h2 className="font-sans text-lg font-medium text-ink">Photo</h2>
+          <p className="text-sm text-muted">{usingDefault ? 'Using the default photo.' : file ? `New photo ready: ${file.name}. Save to publish it.` : 'Using your uploaded photo.'}</p>
+          <input ref={fileInput} type="file" accept="image/*" className="sr-only" aria-label="Upload showroom photo" onChange={(e) => { setFile(e.target.files?.[0] ?? null); e.target.value = '' }} />
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" size="sm" onClick={() => fileInput.current?.click()}>
+              <ImagePlus className="size-4" aria-hidden />
+              {usingDefault ? 'Upload a photo' : 'Replace photo'}
+            </Button>
+            {!usingDefault && (
+              <Button variant="ghost" size="sm" onClick={() => { setFile(null); setImage(null) }}>
+                <Trash2 className="size-4" aria-hidden />
+                Remove, use default
+              </Button>
+            )}
+          </div>
+        </div>
       </section>
 
-      <section aria-labelledby="add">
-        <h2 id="add" className="mb-3 font-sans text-lg font-medium text-ink">
-          Add a dress
+      <section aria-labelledby="adjust" className="space-y-2">
+        <h2 id="adjust" className="font-sans text-lg font-medium text-ink">
+          Adjust
         </h2>
-        {options.length === 0 ? (
-          <p className="text-muted">Every dress is already chosen, or you have not added any dresses yet.</p>
-        ) : (
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {options.map((d) => {
-              const noPhoto = d.images.length === 0
-              return (
-                <li key={d.id}>
-                  <button
-                    type="button"
-                    disabled={noPhoto || ids.length >= HERO_MAX_DRESSES}
-                    onClick={() => setIds([...ids, d.id])}
-                    className="block w-full rounded-2xl border border-line bg-ivory p-2 text-left transition-colors hover:border-burgundy disabled:opacity-50 disabled:hover:border-line"
-                  >
-                    <span className="block aspect-[3/4] overflow-hidden rounded-xl bg-blush-soft">
-                      <DressPhoto dress={d} className="size-full object-cover" />
-                    </span>
-                    <span className="mt-2 block truncate text-sm font-medium">{d.name}</span>
-                    {noPhoto && <span className="text-xs text-muted">Needs a photo</span>}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        )}
+        <Slider label="Left / right" value={adj.focusX} min={0} max={100} step={1} onChange={set('focusX')} format={(v) => `${v}%`} />
+        <Slider label="Up / down" value={adj.focusY} min={0} max={100} step={1} onChange={set('focusY')} format={(v) => `${v}%`} />
+        <Slider label="Zoom" value={adj.zoom} min={SHOWROOM_LIMITS.zoom[0]} max={SHOWROOM_LIMITS.zoom[1]} step={0.05} onChange={set('zoom')} format={(v) => `${v.toFixed(2)}×`} />
+        <Slider label="Brightness" value={adj.brightness} min={SHOWROOM_LIMITS.brightness[0]} max={SHOWROOM_LIMITS.brightness[1]} step={0.05} onChange={set('brightness')} format={(v) => `${Math.round(v * 100)}%`} />
+        <Button variant="ghost" size="sm" onClick={() => setAdj({ ...DEFAULT_SHOWROOM })}>
+          Reset adjustments
+        </Button>
+      </section>
+    </EditorFrame>
+  )
+}
+
+/* ---------------- Terms and conditions ---------------- */
+
+export function TermsEditor() {
+  const { ready, configured } = useReadyGuard()
+  const saved = useCatalog((s) => s.terms)
+  if (!configured) return <NotConfigured />
+  if (!ready) return <ListSkeleton rows={3} label="Loading…" />
+  return <TermsForm initial={saved} />
+}
+
+function TermsForm({ initial }: { initial: TermsContent | null }) {
+  const fileInput = useRef<HTMLInputElement>(null)
+  const [image, setImage] = useState(initial?.image ?? null)
+  const [file, setFile] = useState<File | null>(null)
+
+  const preview = useMemo(() => (file ? URL.createObjectURL(file) : ''), [file])
+  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
+  const shown = preview || image?.url
+
+  const save = async () => {
+    const uploaded = file ? await uploadTermsImage(file) : null
+    const next = uploaded ?? image
+    await saveSetting('terms', { image: next } satisfies TermsContent)
+    if (initial?.image && initial.image.path !== next?.path) void deleteImages([initial.image.path])
+    setFile(null)
+    setImage(next)
+  }
+
+  return (
+    <EditorFrame title="Terms & conditions" intro="Upload an image of your terms and conditions. Guests see it on the Terms & Conditions page. If there is no image, the page says Coming soon." onSave={save}>
+      <section aria-labelledby="terms-image" className="space-y-3">
+        <h2 id="terms-image" className="font-sans text-lg font-medium text-ink">
+          Image
+        </h2>
+        <p className="text-sm text-muted">{!shown ? 'No image yet. The page shows Coming soon.' : file ? `New image ready: ${file.name}. Save to publish it.` : 'Showing your uploaded image.'}</p>
+        {shown && <img src={shown} alt="Terms and conditions preview" className="h-auto w-full max-w-md rounded-2xl ring-1 ring-line" />}
+        <input ref={fileInput} type="file" accept="image/*" className="sr-only" aria-label="Upload terms and conditions image" onChange={(e) => { setFile(e.target.files?.[0] ?? null); e.target.value = '' }} />
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" size="sm" onClick={() => fileInput.current?.click()}>
+            <ImagePlus className="size-4" aria-hidden />
+            {shown ? 'Replace image' : 'Upload an image'}
+          </Button>
+          {shown && (
+            <Button variant="ghost" size="sm" onClick={() => { setFile(null); setImage(null) }}>
+              <Trash2 className="size-4" aria-hidden />
+              Remove image
+            </Button>
+          )}
+        </div>
       </section>
     </EditorFrame>
   )
