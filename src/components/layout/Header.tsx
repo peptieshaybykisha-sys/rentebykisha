@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Heart, Search, ShoppingBag, ReceiptText, User } from 'lucide-react'
 import { useAuthStore, useCartStore, useWishlistStore } from '@/stores'
 import { cn } from '@/lib/utils'
-import { MAIN_NAV } from '@/constants/navigation'
+import { useNavigation } from '@/hooks/useSettings'
 import SearchDialog from './SearchDialog'
 
 function Badge({ n }: { n: number }) {
@@ -38,6 +38,7 @@ export default function Header() {
   const cartCount = useCartStore((s) => s.items.length)
   const saved = useWishlistStore((s) => s.ids.length)
   const user = useAuthStore((s) => s.user)
+  const { main } = useNavigation()
   const transparent = pathname === '/' && !scrolled
 
   useEffect(() => {
@@ -62,11 +63,11 @@ export default function Header() {
           </Link>
 
           <nav aria-label="Main" className="hidden items-center gap-9 lg:flex">
-            {MAIN_NAV.map((n) => (
+            {main.map((n, i) => (
               <NavLink
-                key={n.to}
+                key={`${n.to}-${i}`}
                 to={n.to}
-                end={n.end}
+                end={n.to === '/'}
                 className="link-underline py-1 text-[0.98rem] font-medium tracking-wide text-ink hover:text-burgundy aria-[current=page]:text-burgundy"
               >
                 {n.label}

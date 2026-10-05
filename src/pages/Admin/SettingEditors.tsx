@@ -8,14 +8,14 @@ import { ListSkeleton } from '@/components/ui/Skeleton'
 import { Input, Select, Textarea } from '@/components/ui/Field'
 import { HERO_MAX_DRESSES, HERO_SLOT_NAMES } from '@/constants/home'
 import { DEFAULT_HOW_IT_WORKS, MAX_STEPS, STEP_ICON_NAMES, STEP_ICONS } from '@/constants/howItWorks'
-import { DEFAULT_SIZE_GUIDE } from '@/constants/sizeGuide'
 import { useDressList } from '@/hooks/useDresses'
 import { saveSetting } from '@/lib/adminApi'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { move } from '@/lib/utils'
 import { notify } from '@/lib/toast'
 import { useCatalog } from '@/stores/catalog'
-import type { HowItWorksContent, SizeGuideContent, StepIconName } from '@/types'
+import type { HowItWorksContent, NavigationContent, NavItem, StepIconName } from '@/types'
+import { DEFAULT_NAVIGATION, MAX_FOOTER_COLUMNS, MAX_FOOTER_ITEMS, MAX_NAV_LINKS } from '@/constants/navigation'
 
 /** Wraps an editor: waits for the saved content, then offers one Save button. */
 function EditorFrame({ title, intro, children, onSave, onReset }: { title: string; intro: string; children: ReactNode; onSave: () => Promise<void>; onReset?: () => void }) {
@@ -59,76 +59,6 @@ function EditorFrame({ title, intro, children, onSave, onReset }: { title: strin
 function useReadyGuard() {
   const ready = useCatalog((s) => s.settingsReady)
   return { ready, configured: isSupabaseConfigured }
-}
-
-/* ---------------- Size guide ---------------- */
-export function SizeGuideEditor() {
-  const { ready, configured } = useReadyGuard()
-  const saved = useCatalog((s) => s.sizeGuide)
-  if (!configured) return <NotConfigured />
-  if (!ready) return <ListSkeleton rows={3} label="Loading…" />
-  return <SizeGuideForm initial={saved ?? DEFAULT_SIZE_GUIDE} />
-}
-
-function SizeGuideForm({ initial }: { initial: SizeGuideContent }) {
-  const [g, setG] = useState<SizeGuideContent>(() => structuredClone(initial))
-  const setCell = (r: number, c: number, v: string) => setG((s) => ({ ...s, rows: s.rows.map((row, i) => (i === r ? row.map((x, j) => (j === c ? v : x)) : row)) }))
-  const cell = 'min-h-11 w-full min-w-24 rounded-lg border border-line bg-ivory px-3 focus:border-burgundy focus:outline-none focus:ring-2 focus:ring-burgundy/20'
-
-  return (
-    <EditorFrame
-      title="Size guide"
-      intro="This table opens from “Size Guide” on every dress page. Rename columns, add measurements or change any value."
-      onSave={() => saveSetting('sizeGuide', g)}
-      onReset={() => setG(structuredClone(DEFAULT_SIZE_GUIDE))}
-    >
-      <Textarea label="Note above the table" rows={3} value={g.note} onChange={(e) => setG({ ...g, note: e.target.value })} />
-      <div>
-        <div className="overflow-x-auto rounded-2xl border border-line bg-ivory p-3">
-          <table className="w-full border-separate border-spacing-2">
-            <caption className="sr-only">Editable size guide</caption>
-            <thead>
-              <tr>
-                {g.columns.map((c, ci) => (
-                  <th key={ci} scope="col" className="align-top">
-                    <input aria-label={`Column ${ci + 1} name`} value={c} onChange={(e) => setG({ ...g, columns: g.columns.map((x, j) => (j === ci ? e.target.value : x)) })} className={`${cell} font-medium text-burgundy`} />
-                    {ci > 0 && g.columns.length > 2 && (
-                      <button type="button" className="mt-1 text-xs text-muted hover:text-burgundy" onClick={() => setG({ columns: g.columns.filter((_, j) => j !== ci), rows: g.rows.map((r) => r.filter((_, j) => j !== ci)), note: g.note })}>
-                        Remove column
-                      </button>
-                    )}
-                  </th>
-                ))}
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {g.rows.map((row, ri) => (
-                <tr key={ri}>
-                  {g.columns.map((_, ci) => (
-                    <td key={ci}>
-                      <input aria-label={`${g.columns[ci]}, row ${ri + 1}`} value={row[ci] ?? ''} onChange={(e) => setCell(ri, ci, e.target.value)} className={cell} />
-                    </td>
-                  ))}
-                  <td>
-                    <MoveButtons index={ri} count={g.rows.length} label={`row ${ri + 1}`} onMove={(to) => setG({ ...g, rows: move(g.rows, ri, to) })} onRemove={() => setG({ ...g, rows: g.rows.filter((_, k) => k !== ri) })} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-3">
-          <Button variant="secondary" size="sm" onClick={() => setG({ ...g, rows: [...g.rows, g.columns.map(() => '')] })}>
-            <Plus className="size-4" aria-hidden /> Add a size row
-          </Button>
-          <Button variant="secondary" size="sm" onClick={() => setG({ ...g, columns: [...g.columns, 'New'], rows: g.rows.map((r) => [...r, '']) })}>
-            <Plus className="size-4" aria-hidden /> Add a column
-          </Button>
-        </div>
-      </div>
-    </EditorFrame>
-  )
 }
 
 /* ---------------- Hero dresses ---------------- */
@@ -288,6 +218,119 @@ function HowItWorksForm({ initial }: { initial: HowItWorksContent }) {
         <Button variant="secondary" size="sm" onClick={() => setC({ ...c, faq: [...c.faq, { q: '', a: '' }] })}>
           <Plus className="size-4" aria-hidden /> Add a question
         </Button>
+      </section>
+    </EditorFrame>
+  )
+}
+
+/* ---------------- Navbar and footer ---------------- */
+export function NavigationEditor() {
+  const { ready, configured } = useReadyGuard()
+  const saved = useCatalog((s) => s.navigation)
+  if (!configured) return <NotConfigured />
+  if (!ready) return <ListSkeleton rows={3} label="Loading…" />
+  return <NavigationForm initial={saved ?? DEFAULT_NAVIGATION} />
+}
+
+const clean = (items: NavItem[]) => items.map((i) => ({ label: i.label.trim(), to: i.to.trim() })).filter((i) => i.label)
+
+function ItemRow({ item, index, count, noun, linkRequired, onChange, onMove, onRemove }: { item: NavItem; index: number; count: number; noun: string; linkRequired?: boolean; onChange: (patch: Partial<NavItem>) => void; onMove: (to: number) => void; onRemove: () => void }) {
+  return (
+    <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-ivory p-3">
+      <Input className="min-w-40 flex-1" label="Text" value={item.label} onChange={(e) => onChange({ label: e.target.value })} />
+      <Input
+        className="min-w-40 flex-1"
+        label={linkRequired ? 'Link' : 'Link (leave empty for plain text)'}
+        placeholder="/dresses, mailto:…, https://…"
+        value={item.to}
+        onChange={(e) => onChange({ to: e.target.value })}
+      />
+      <MoveButtons index={index} count={count} label={`${noun} ${index + 1}`} onMove={onMove} onRemove={onRemove} />
+    </div>
+  )
+}
+
+function NavigationForm({ initial }: { initial: NavigationContent }) {
+  const [c, setC] = useState<NavigationContent>(() => structuredClone(initial))
+  const setFooter = (patch: Partial<NavigationContent['footer']>) => setC((s) => ({ ...s, footer: { ...s.footer, ...patch } }))
+  const setMain = (main: NavItem[]) => setC((s) => ({ ...s, main }))
+  const setColumn = (i: number, patch: Partial<NavigationContent['footer']['columns'][number]>) =>
+    setFooter({ columns: c.footer.columns.map((x, k) => (k === i ? { ...x, ...patch } : x)) })
+  const patchAt = <T,>(list: T[], i: number, patch: Partial<T>) => list.map((x, k) => (k === i ? { ...x, ...patch } : x))
+
+  return (
+    <EditorFrame
+      title="Navbar & footer"
+      intro="Change the links in the top bar and everything in the footer. Links to pages on this site start with a slash, like /dresses."
+      onSave={() => {
+        const main = clean(c.main).filter((i) => i.to)
+        if (!main.length) throw new Error('Keep at least one link in the navbar.')
+        const columns = c.footer.columns
+          .map((col) => ({ title: col.title.trim(), items: clean(col.items) }))
+          .filter((col) => col.title || col.items.length)
+        return saveSetting('navigation', { main, footer: { ...c.footer, columns } })
+      }}
+      onReset={() => setC(structuredClone(DEFAULT_NAVIGATION))}
+    >
+      <section aria-labelledby="main" className="space-y-3">
+        <h2 id="main" className="font-sans text-lg font-medium text-ink">
+          Navbar links (up to {MAX_NAV_LINKS})
+        </h2>
+        {c.main.map((item, i) => (
+          <ItemRow key={i} item={item} index={i} count={c.main.length} noun="link" linkRequired onChange={(p) => setMain(patchAt(c.main, i, p))} onMove={(to) => setMain(move(c.main, i, to))} onRemove={() => setMain(c.main.filter((_, k) => k !== i))} />
+        ))}
+        {c.main.length < MAX_NAV_LINKS && (
+          <Button variant="secondary" size="sm" onClick={() => setMain([...c.main, { label: '', to: '' }])}>
+            <Plus className="size-4" aria-hidden /> Add a link
+          </Button>
+        )}
+      </section>
+
+      <section aria-labelledby="foot" className="space-y-3">
+        <h2 id="foot" className="font-sans text-lg font-medium text-ink">
+          Footer
+        </h2>
+        <Textarea label="Short message under the logo" rows={2} value={c.footer.tagline} onChange={(e) => setFooter({ tagline: e.target.value })} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Input label="Copyright line (the year is added for you)" value={c.footer.copyright} onChange={(e) => setFooter({ copyright: e.target.value })} />
+          <Input label="Bottom right note" value={c.footer.note} onChange={(e) => setFooter({ note: e.target.value })} />
+        </div>
+      </section>
+
+      <section aria-labelledby="cols" className="space-y-4">
+        <h2 id="cols" className="font-sans text-lg font-medium text-ink">
+          Footer columns (up to {MAX_FOOTER_COLUMNS})
+        </h2>
+        {c.footer.columns.map((col, i) => (
+          <div key={i} className="space-y-3 rounded-2xl border border-line bg-cream p-4">
+            <div className="flex items-end gap-3">
+              <Input className="flex-1" label={`Column ${i + 1} heading`} value={col.title} onChange={(e) => setColumn(i, { title: e.target.value })} />
+              <MoveButtons index={i} count={c.footer.columns.length} label={`column ${i + 1}`} onMove={(to) => setFooter({ columns: move(c.footer.columns, i, to) })} onRemove={() => setFooter({ columns: c.footer.columns.filter((_, k) => k !== i) })} />
+            </div>
+            {col.items.map((item, k) => (
+              <ItemRow
+                key={k}
+                item={item}
+                index={k}
+                count={col.items.length}
+                noun="line"
+                onChange={(p) => setColumn(i, { items: patchAt(col.items, k, p) })}
+                onMove={(to) => setColumn(i, { items: move(col.items, k, to) })}
+                onRemove={() => setColumn(i, { items: col.items.filter((_, n) => n !== k) })}
+              />
+            ))}
+            {col.items.length < MAX_FOOTER_ITEMS && (
+              <Button variant="secondary" size="sm" onClick={() => setColumn(i, { items: [...col.items, { label: '', to: '' }] })}>
+                <Plus className="size-4" aria-hidden /> Add a line
+              </Button>
+            )}
+          </div>
+        ))}
+        {c.footer.columns.length < MAX_FOOTER_COLUMNS && (
+          <Button variant="secondary" size="sm" onClick={() => setFooter({ columns: [...c.footer.columns, { title: '', items: [] }] })}>
+            <Plus className="size-4" aria-hidden /> Add a column
+          </Button>
+        )}
       </section>
     </EditorFrame>
   )

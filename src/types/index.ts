@@ -25,6 +25,8 @@ export interface Dress {
   description: string
   details: string[]
   images: DressImage[]
+  /** This dress's own measurements table; the "Size Guide" button hides when empty. */
+  sizeGuide?: SizeGuideContent | null
   status: 'available' | 'unavailable'
   /** Dates the admin blocked by hand. */
   bookedRanges: DateRange[]
@@ -136,6 +138,22 @@ export type StepIconName = 'search' | 'calendar' | 'wallet' | 'sparkles' | 'pack
 export interface HowItWorksContent {
   steps: { icon: StepIconName; title: string; text: string }[]
   faq: { q: string; a: string }[]
+}
+
+/** A link, or plain text when `to` is empty. `to` may be a site path, a full URL, or mailto:/tel:. */
+export interface NavItem {
+  label: string
+  to: string
+}
+
+export interface NavigationContent {
+  main: NavItem[]
+  footer: {
+    tagline: string
+    columns: { title: string; items: NavItem[] }[]
+    copyright: string
+    note: string
+  }
 }
 
 export interface HeroContent {

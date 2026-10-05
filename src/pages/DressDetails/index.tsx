@@ -42,6 +42,7 @@ function DressView({ dress }: { dress: Dress }) {
   const [range, setRange] = useState<{ start?: string; end?: string }>({ start: inCart?.startDate, end: inCart?.endDate })
   const [guideOpen, setGuideOpen] = useState(false)
   const [attempted, setAttempted] = useState(false)
+  const hasGuide = !!dress.sizeGuide?.rows.length
 
   const unavailable = dress.status === 'unavailable'
   const availability = checkAvailability(dress, range.start, range.end)
@@ -139,9 +140,11 @@ function DressView({ dress }: { dress: Dress }) {
           <fieldset className="mt-9" disabled={unavailable}>
             <div className="mb-3 flex items-center justify-between">
               <legend className="text-lg font-medium">Size</legend>
-              <button type="button" onClick={() => setGuideOpen(true)} className="link-underline flex min-h-11 items-center gap-1.5 text-[0.95rem] text-burgundy">
-                <Ruler className="size-4" aria-hidden /> Size Guide
-              </button>
+              {hasGuide && (
+                <button type="button" onClick={() => setGuideOpen(true)} className="link-underline flex min-h-11 items-center gap-1.5 text-[0.95rem] text-burgundy">
+                  <Ruler className="size-4" aria-hidden /> Size Guide
+                </button>
+              )}
             </div>
             <div className="flex flex-wrap gap-2.5">
               {dress.sizes.map((s) => (
@@ -208,7 +211,7 @@ function DressView({ dress }: { dress: Dress }) {
           )}
         </div>
       </div>
-      <SizeGuide open={guideOpen} onClose={() => setGuideOpen(false)} />
+      {hasGuide && <SizeGuide guide={dress.sizeGuide!} open={guideOpen} onClose={() => setGuideOpen(false)} />}
     </Container>
   )
 }

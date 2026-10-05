@@ -27,6 +27,7 @@ export async function saveDress(id: string, data: Omit<Dress, 'id' | 'createdAt'
     details: data.details,
     sizes: data.sizes,
     images: data.images,
+    size_guide: data.sizeGuide ?? null,
     status: data.status,
     booked_ranges: data.bookedRanges,
     featured: data.featured ?? false,
@@ -55,7 +56,7 @@ export async function deleteDress(dress: Dress) {
   check((await client().from('dresses').delete().eq('id', dress.id)).error)
 }
 
-export async function saveSetting(key: 'sizeGuide' | 'howItWorks' | 'hero', value: object) {
+export async function saveSetting(key: 'howItWorks' | 'hero' | 'navigation', value: object) {
   check((await client().from('settings').upsert({ key, value, updated_at: new Date().toISOString() })).error)
 }
 

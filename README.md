@@ -179,7 +179,7 @@ If you use a custom Supabase domain, update `connect-src` and `img-src` in the C
 **Other sections**
 
 - **Dresses:** add dresses with real photos, custom sizes, deposits and blocked dates.
-- **Hero dresses, Size guide, How it works:** edit the home page and info pages.
+- **Hero dresses, How it works:** edit the home page and info pages. Each dress has its own size guide, set on the dress form.
 - **Fittings:** view upcoming appointments.
 - **Users:** promote or demote accounts.
 

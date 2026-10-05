@@ -5,18 +5,20 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ImagePlus, Loader2, Plus, X } from 'lucide-react'
 import { MoveButtons, NotConfigured } from '@/components/admin/AdminShell'
+import SizeGuideEditor from '@/components/admin/SizeGuideEditor'
 import { Notice } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
 import Dialog from '@/components/ui/Dialog'
 import { ListSkeleton } from '@/components/ui/Skeleton'
 import { Input, Select, Textarea } from '@/components/ui/Field'
 import { CATEGORIES, SIZE_PRESETS } from '@/constants/catalog'
+import { DEFAULT_SIZE_GUIDE } from '@/constants/sizeGuide'
 import { useDress } from '@/hooks/useDresses'
 import { deleteDress, deleteImages, newDressId, saveDress, uploadDressImage } from '@/lib/adminApi'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { cn, formatShort, move } from '@/lib/utils'
 import { notify } from '@/lib/toast'
-import type { Category, DateRange, Dress, DressImage } from '@/types'
+import type { Category, DateRange, Dress, DressImage, SizeGuideContent } from '@/types'
 
 const schema = z.object({
   name: z.string().trim().min(2, 'Give the dress a name.'),
@@ -53,6 +55,7 @@ function Editor({ dress }: { dress?: Dress }) {
   const [removed, setRemoved] = useState<string[]>([])
   const [sizes, setSizes] = useState<string[]>(dress?.sizes ?? [])
   const [sizeInput, setSizeInput] = useState('')
+  const [guide, setGuide] = useState<SizeGuideContent>(() => structuredClone(dress?.sizeGuide ?? DEFAULT_SIZE_GUIDE))
   const [blocked, setBlocked] = useState<DateRange[]>(dress?.bookedRanges ?? [])
   const [range, setRange] = useState({ start: '', end: '' })
   const [uploading, setUploading] = useState(0)
@@ -124,6 +127,7 @@ function Editor({ dress }: { dress?: Dress }) {
         description: v.description,
         details: v.details.split('\n').map((l) => l.trim()).filter(Boolean),
         sizes,
+        sizeGuide: guide.rows.length ? guide : null,
         status: v.status,
         featured: v.featured,
         images: images.map((im) => ({ ...im, alt: im.alt || v.name })),
@@ -251,6 +255,14 @@ function Editor({ dress }: { dress?: Dress }) {
           </p>
         )}
       </fieldset>
+
+      <section aria-labelledby="size-guide" className="space-y-3">
+        <h2 id="size-guide" className="font-sans text-lg font-medium text-ink">
+          Size guide
+        </h2>
+        <p className="text-sm text-muted">Measurements for this dress, shown from “Size Guide” on its page. Remove every row to hide the button.</p>
+        <SizeGuideEditor value={guide} onChange={setGuide} />
+      </section>
 
       <section aria-labelledby="avail" className="space-y-4">
         <h2 id="avail" className="font-sans text-lg font-medium text-ink">

@@ -27,9 +27,9 @@ const AdminFittings = lazy(() => import('@/pages/Admin/AdminFittings'))
 const AdminUsers = lazy(() => import('@/pages/Admin/AdminUsers'))
 const DressList = lazy(() => import('@/pages/Admin/DressList'))
 const DressForm = lazy(() => import('@/pages/Admin/DressForm'))
-const SizeGuideEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.SizeGuideEditor })))
 const HeroEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.HeroEditor })))
 const HowItWorksEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.HowItWorksEditor })))
+const NavigationEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.NavigationEditor })))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 export default function AppRoutes() {
@@ -45,8 +45,8 @@ export default function AppRoutes() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="dresses/:id" element={<DressForm />} />
           <Route path="hero" element={<HeroEditor />} />
-          <Route path="size-guide" element={<SizeGuideEditor />} />
           <Route path="how-it-works" element={<HowItWorksEditor />} />
+          <Route path="navigation" element={<NavigationEditor />} />
         </Route>
       </Route>
       <Route element={<Layout />}>

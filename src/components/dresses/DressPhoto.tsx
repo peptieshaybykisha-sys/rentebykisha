@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { Shirt } from 'lucide-react'
 import type { Dress } from '@/types'
 import { cn } from '@/lib/utils'
@@ -8,10 +8,11 @@ interface Props {
   index?: number
   className?: string
   priority?: boolean
+  style?: CSSProperties
 }
 
 /** The dress photo uploaded by the admin, or a quiet placeholder when none exists yet. */
-export default function DressPhoto({ dress, index = 0, className, priority }: Props) {
+export default function DressPhoto({ dress, index = 0, className, priority, style }: Props) {
   const img = dress.images[index] ?? dress.images[0]
   const [loaded, setLoaded] = useState(false)
   if (!img)
@@ -23,6 +24,7 @@ export default function DressPhoto({ dress, index = 0, className, priority }: Pr
   return (
     <img
       src={img.url}
+      style={style}
       alt={img.alt || dress.name}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"

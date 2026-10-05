@@ -1,8 +1,8 @@
 import Dialog from '@/components/ui/Dialog'
-import { useSizeGuide } from '@/hooks/useSettings'
+import type { SizeGuideContent } from '@/types'
 
-export default function SizeGuide({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { note, columns, rows } = useSizeGuide()
+export default function SizeGuide({ guide, open, onClose }: { guide: SizeGuideContent; open: boolean; onClose: () => void }) {
+  const { note, columns, rows } = guide
   return (
     <Dialog open={open} onClose={onClose} title="Size guide">
       {note && <p className="mb-4 text-muted">{note}</p>}

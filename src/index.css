@@ -58,12 +58,14 @@ body {
   overflow-x: hidden;
 }
 
+@layer base {
 h1, h2, h3, h4 {
   font-family: var(--font-serif);
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.01em;
   color: var(--color-burgundy);
+}
 }
 
 ::selection { background: var(--color-blush); color: var(--color-burgundy); }

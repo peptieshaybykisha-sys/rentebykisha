@@ -1,12 +1,12 @@
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
-import type { Dress, HeroContent, HowItWorksContent, SizeGuideContent } from '@/types'
+import type { Dress, HeroContent, HowItWorksContent, NavigationContent, SizeGuideContent } from '@/types'
 
 interface CatalogState {
   dresses: Dress[]
-  sizeGuide: SizeGuideContent | null
   howItWorks: HowItWorksContent | null
   hero: HeroContent | null
+  navigation: NavigationContent | null
   status: 'loading' | 'ready' | 'error'
   /** True once the settings rows have been read (even when none exist yet). */
   settingsReady: boolean
@@ -14,9 +14,9 @@ interface CatalogState {
 
 export const useCatalog = create<CatalogState>()(() => ({
   dresses: [],
-  sizeGuide: null,
   howItWorks: null,
   hero: null,
+  navigation: null,
   status: 'loading',
   settingsReady: false,
 }))
@@ -35,6 +35,7 @@ export function dressFromRow(r: Record<string, unknown>): Dress {
     description: String(r.description ?? ''),
     details: arr<string>(r.details),
     images: arr<Dress['images'][number]>(r.images),
+    sizeGuide: (r.size_guide as SizeGuideContent | null) ?? null,
     status: r.status === 'unavailable' ? 'unavailable' : 'available',
     bookedRanges: arr<Dress['bookedRanges'][number]>(r.booked_ranges),
     featured: Boolean(r.featured),
@@ -65,9 +66,9 @@ async function load() {
     dresses: dresses.data.map((r) => ({ ...dressFromRow(r), reservedRanges: byDress.get(String(r.id)) ?? [] })),
     status: 'ready',
     settingsReady: true,
-    sizeGuide: null,
     howItWorks: null,
     hero: null,
+    navigation: null,
   }
   for (const row of settings.data ?? []) (next as Record<string, unknown>)[row.key] = row.value
   useCatalog.setState(next)

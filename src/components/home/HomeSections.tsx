@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import Container from '@/components/common/Container'
 import { EmptyState } from '@/components/common/States'
 import HowItWorksSteps from '@/components/common/HowItWorksSteps'
@@ -108,28 +108,76 @@ export function FeaturedSection() {
   const dresses = useDressList()
   const featured = dresses.filter((d) => d.featured)
   const loading = useCatalogStatus() === 'loading'
+  const track = useRef<HTMLUListElement>(null)
+  const [edge, setEdge] = useState({ start: true, end: true })
+
+  const measure = useCallback(() => {
+    const el = track.current
+    if (!el) return
+    setEdge({ start: el.scrollLeft <= 4, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 4 })
+  }, [])
+
+  useEffect(() => {
+    const el = track.current
+    if (!el) return
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [measure, loading, featured.length])
+
+  const scrollByCard = (dir: 1 | -1) => {
+    const el = track.current
+    const card = el?.querySelector('li')
+    if (!el || !card) return
+    const step = card.getBoundingClientRect().width + 20
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    el.scrollBy({ left: dir * step, behavior: reduce ? 'auto' : 'smooth' })
+  }
+
   if (!loading && featured.length === 0) return null
+  const overflowing = !edge.start || !edge.end
+  const arrow =
+    'grid size-11 place-items-center rounded-full border border-burgundy/25 bg-ivory text-burgundy transition-colors hover:bg-burgundy hover:text-ivory disabled:pointer-events-none disabled:opacity-35'
   return (
-    <section aria-labelledby="featured-title" className="pt-24">
+    <section aria-labelledby="featured-title" className="pt-16 sm:pt-24">
       <Container>
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
           <div>
-            <h2 id="featured-title" className="text-5xl sm:text-6xl">
+            <h2 id="featured-title" className="text-4xl sm:text-6xl">
               Featured dresses
             </h2>
-            <p className="mt-2 text-lg text-muted">The gowns everyone asks for first.</p>
+            <p className="mt-2 text-base text-muted sm:text-lg">The gowns everyone asks for first.</p>
           </div>
-          <Link to="/dresses" className="link-underline pb-1 font-medium text-burgundy">
-            See all dresses →
-          </Link>
+          <div className="flex items-center gap-5">
+            <Link to="/dresses" className="link-underline pb-1 font-medium text-burgundy">
+              See all dresses →
+            </Link>
+            {overflowing && (
+              <div className="hidden items-center gap-2 sm:flex">
+                <button type="button" onClick={() => scrollByCard(-1)} disabled={edge.start} aria-label="Previous dresses" className={arrow}>
+                  <ChevronLeft className="size-5" aria-hidden />
+                </button>
+                <button type="button" onClick={() => scrollByCard(1)} disabled={edge.end} aria-label="Next dresses" className={arrow}>
+                  <ChevronRight className="size-5" aria-hidden />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </Container>
       {loading ? (
         <FeaturedRowSkeleton />
       ) : (
-        <ul className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 sm:px-8 lg:px-[max(3rem,calc((100vw-80rem)/2+3rem))]">
+        <ul
+          ref={track}
+          onScroll={measure}
+          tabIndex={0}
+          aria-label="Featured dresses, scroll horizontally"
+          className="no-scrollbar flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto scroll-smooth px-5 pb-4 focus-visible:outline-offset-[-4px] sm:scroll-px-8 sm:gap-5 sm:px-8 lg:scroll-px-12 lg:px-[max(3rem,calc((100vw-80rem)/2+3rem))]"
+        >
           {featured.map((d) => (
-            <li key={d.id} className="w-[72vw] max-w-[21rem] shrink-0 snap-start sm:w-[21rem]">
+            <li key={d.id} className="w-[72vw] max-w-[21rem] shrink-0 snap-start sm:w-[40vw] md:w-[30vw] lg:w-[21rem]">
               <DressCard dress={d} />
             </li>
           ))}
@@ -138,6 +186,8 @@ export function FeaturedSection() {
     </section>
   )
 }
+
+const FADE = 'linear-gradient(to right, transparent 0%, black 25%, black 75%, transparent 100%)'
 
 export function FittingCta() {
   const dresses = useDressList()
@@ -158,9 +208,17 @@ export function FittingCta() {
               Schedule My Fitting
             </ButtonLink>
           </div>
-          <div className="relative hidden h-full min-h-[20rem] bg-blush-soft md:block">
+          <div className="relative hidden h-full min-h-[26rem] overflow-hidden bg-burgundy md:block">
             {dress ? (
-              <DressPhoto dress={dress} className="absolute inset-0 size-full object-cover" />
+              <>
+                {/* full photo on the card colour; its edges fade into the burgundy so nothing is cropped or boxed in */}
+                <DressPhoto
+                  dress={dress}
+                  priority
+                  className="absolute inset-0 size-full object-contain"
+                  style={{ maskImage: FADE, WebkitMaskImage: FADE }}
+                />
+              </>
             ) : (
               <div className="absolute inset-0 grid place-items-center">
                 <span className="font-serif text-3xl text-burgundy/50">Coming soon</span>
