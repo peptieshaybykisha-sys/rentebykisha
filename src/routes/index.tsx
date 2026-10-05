@@ -59,7 +59,6 @@ export default function AppRoutes() {
         <Route path="collections" element={<Collections />} />
         <Route path="cart" element={<Cart />} />
         <Route path="wishlist" element={<Wishlist />} />
-        <Route path="fitting" element={<Fitting />} />
         <Route path="how-it-works" element={<HowItWorks />} />
         <Route path="terms" element={<Terms />} />
         <Route path="login" element={<Login />} />
@@ -67,6 +66,7 @@ export default function AppRoutes() {
         <Route path="reset-password" element={<ResetPassword />} />
         <Route path="register" element={<Register />} />
         <Route element={<RequireAuth />}>
+          <Route path="fitting" element={<Fitting />} />
           <Route path="checkout" element={<Checkout />} />
           <Route path="confirmation/:id" element={<Confirmation />} />
           <Route path="account" element={<Account />} />
