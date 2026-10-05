@@ -62,11 +62,11 @@ const expect = (name, cond, detail = '') => {
 const denied = (r) => !r.ok || r.count === 0
 const day = (n) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10)
 
-const dress = await run('authenticated', ADMIN, `insert into public.dresses (name, category, price, deposit, sizes) values ('Gown','Evening',900,1000,'{S,M}') returning id`)
+const dress = await run('authenticated', ADMIN, `insert into public.dresses (name, category, price, deposit, sizes) values ('Gown','Long Dress',900,1000,'{S,M}') returning id`)
 const D = dress.rows[0].id
-await db.query(`insert into public.dresses (name, category, price, deposit, sizes, status) values ('Away','Prom',500,500,'{M}','unavailable')`)
+await db.query(`insert into public.dresses (name, category, price, deposit, sizes, status) values ('Away','Short Dress',500,500,'{M}','unavailable')`)
 const AWAY = (await db.query(`select id from public.dresses where name = 'Away'`)).rows[0].id
-await db.query(`insert into public.dresses (name, category, price, deposit, sizes, booked_ranges) values ('Blocked','Prom',500,500,'{M}', $1)`, [JSON.stringify([{ start: day(20), end: day(22) }])])
+await db.query(`insert into public.dresses (name, category, price, deposit, sizes, booked_ranges) values ('Blocked','Long Dress',500,500,'{M}', $1)`, [JSON.stringify([{ start: day(20), end: day(22) }])])
 const BLOCKED = (await db.query(`select id from public.dresses where name = 'Blocked'`)).rows[0].id
 
 // ---- roles
@@ -79,7 +79,7 @@ expect('admin can read every profile', (await run('authenticated', ADMIN, 'selec
 expect('admin cannot demote themselves', (await run('authenticated', ADMIN, `select public.set_user_role('${ADMIN}', 'customer')`)).error?.includes('own admin'))
 expect('admin rejects unknown roles', (await run('authenticated', ADMIN, `select public.set_user_role('${BEN}', 'superuser')`)).error?.includes('Unknown role'))
 expect('admin can promote another user', (await run('authenticated', ADMIN, `select public.set_user_role('${BEN}', 'admin')`)).ok)
-const dressSql = `insert into public.dresses (name, category, price, deposit, sizes) values ('By Ben','Prom',1,1,'{M}')`
+const dressSql = `insert into public.dresses (name, category, price, deposit, sizes) values ('By Ben','Long Dress',1,1,'{M}')`
 expect('the promoted user can now write dresses', (await run('authenticated', BEN, dressSql)).count === 1)
 expect('admin can demote another user and they lose access', (await run('authenticated', ADMIN, `select public.set_user_role('${BEN}', 'customer')`)).ok && !(await run('authenticated', BEN, dressSql)).ok)
 await db.query(`delete from public.dresses where name = 'By Ben'`)

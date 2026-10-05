@@ -103,7 +103,7 @@ function DressView({ dress }: { dress: Dress }) {
                 )}
               </motion.div>
             </AnimatePresence>
-            <WishlistButton dressId={dress.id} name={dress.name} className="absolute right-4 top-4 z-10" />
+            <WishlistButton dressId={dress.id} name={dress.name} showLabel className="absolute right-4 top-4 z-10" />
           </div>
           <ul className={cn("flex gap-3 lg:flex-col", dress.images.length + (hasVideo ? 1 : 0) < 2 && "hidden")} aria-label="Dress photos and video">
             {dress.images.map((img, i) => (

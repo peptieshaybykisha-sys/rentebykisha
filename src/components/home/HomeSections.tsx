@@ -109,13 +109,28 @@ export function FeaturedSection() {
   const featured = dresses.filter((d) => d.featured)
   const loading = useCatalogStatus() === 'loading'
   const track = useRef<HTMLUListElement>(null)
-  const [edge, setEdge] = useState({ start: true, end: true })
+  const settle = useRef<number>(undefined)
+  /** When the row is wider than the screen it loops: the last cards peek in on the left at the start. */
+  const [loop, setLoop] = useState(false)
+  const count = featured.length
+
+  /** Width of one full set of cards, gaps included. */
+  const setWidth = () => {
+    const el = track.current
+    const first = el?.querySelector('li')
+    if (!el || !first) return 0
+    const gap = parseFloat(getComputedStyle(el).columnGap) || 0
+    return count * (first.getBoundingClientRect().width + gap)
+  }
 
   const measure = useCallback(() => {
     const el = track.current
     if (!el) return
-    setEdge({ start: el.scrollLeft <= 4, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 4 })
-  }, [])
+    const first = el.querySelector('li')
+    const gap = parseFloat(getComputedStyle(el).columnGap) || 0
+    const one = first ? first.getBoundingClientRect().width + gap : 0
+    setLoop(count > 1 && count * one > el.clientWidth + one / 2)
+  }, [count])
 
   useEffect(() => {
     const el = track.current
@@ -124,7 +139,30 @@ export function FeaturedSection() {
     const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [measure, loading, featured.length])
+  }, [measure, loading])
+
+  // Start on the real first card, with the loop's leading copy sitting off to the left.
+  useEffect(() => {
+    const el = track.current
+    if (!el || !loop) return
+    el.scrollTo({ left: setWidth(), behavior: 'instant' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loop, count])
+
+  /** Once scrolling settles, jump by exactly one set so the middle copy is always the one on screen. */
+  const onScroll = () => {
+    if (!loop) return
+    window.clearTimeout(settle.current)
+    settle.current = window.setTimeout(() => {
+      const el = track.current
+      const w = setWidth()
+      if (!el || !w) return
+      if (el.scrollLeft < w * 0.5) el.scrollBy({ left: w, behavior: 'instant' })
+      else if (el.scrollLeft > w * 1.5) el.scrollBy({ left: -w, behavior: 'instant' })
+    }, 120)
+  }
+
+  useEffect(() => () => window.clearTimeout(settle.current), [])
 
   const scrollByCard = (dir: 1 | -1) => {
     const el = track.current
@@ -135,10 +173,19 @@ export function FeaturedSection() {
     el.scrollBy({ left: dir * step, behavior: reduce ? 'auto' : 'smooth' })
   }
 
-  if (!loading && featured.length === 0) return null
-  const overflowing = !edge.start || !edge.end
+  if (!loading && count === 0) return null
   const arrow =
     'grid size-11 place-items-center rounded-full border border-burgundy/25 bg-ivory text-burgundy transition-colors hover:bg-burgundy hover:text-ivory disabled:pointer-events-none disabled:opacity-35'
+  const copy = (clone: boolean) =>
+    featured.map((d) => (
+      <li
+        key={`${clone ? 'c' : 'r'}-${d.id}`}
+        {...(clone ? { 'aria-hidden': true, inert: true } : {})}
+        className="w-[72vw] max-w-[21rem] shrink-0 snap-start sm:w-[40vw] md:w-[30vw] lg:w-[21rem]"
+      >
+        <DressCard dress={d} />
+      </li>
+    ))
   return (
     <section aria-labelledby="featured-title" className="pt-16 sm:pt-24">
       <Container>
@@ -153,12 +200,12 @@ export function FeaturedSection() {
             <Link to="/dresses" className="link-underline pb-1 font-medium text-burgundy">
               See all dresses →
             </Link>
-            {overflowing && (
+            {loop && (
               <div className="hidden items-center gap-2 sm:flex">
-                <button type="button" onClick={() => scrollByCard(-1)} disabled={edge.start} aria-label="Previous dresses" className={arrow}>
+                <button type="button" onClick={() => scrollByCard(-1)} aria-label="Previous dresses" className={arrow}>
                   <ChevronLeft className="size-5" aria-hidden />
                 </button>
-                <button type="button" onClick={() => scrollByCard(1)} disabled={edge.end} aria-label="Next dresses" className={arrow}>
+                <button type="button" onClick={() => scrollByCard(1)} aria-label="Next dresses" className={arrow}>
                   <ChevronRight className="size-5" aria-hidden />
                 </button>
               </div>
@@ -171,16 +218,14 @@ export function FeaturedSection() {
       ) : (
         <ul
           ref={track}
-          onScroll={measure}
+          onScroll={onScroll}
           tabIndex={0}
           aria-label="Featured dresses, scroll horizontally"
           className="no-scrollbar flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto scroll-smooth px-5 pb-4 focus-visible:outline-offset-[-4px] sm:scroll-px-8 sm:gap-5 sm:px-8 lg:scroll-px-12 lg:px-[max(3rem,calc((100vw-80rem)/2+3rem))]"
         >
-          {featured.map((d) => (
-            <li key={d.id} className="w-[72vw] max-w-[21rem] shrink-0 snap-start sm:w-[40vw] md:w-[30vw] lg:w-[21rem]">
-              <DressCard dress={d} />
-            </li>
-          ))}
+          {loop && copy(true)}
+          {copy(false)}
+          {loop && copy(true)}
         </ul>
       )}
     </section>

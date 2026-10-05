@@ -19,7 +19,7 @@ export default function Footer() {
         style={{ '--footer-cols': Math.max(footer.columns.length, 1) } as React.CSSProperties}
       >
         <div className="text-center">
-          <span className="mx-auto -mt-8 -mb-5   block size-60">
+          <span className="mx-auto -mt-8 -mb-5 block size-50">
             <img src={logo} alt="Renté by Kisha" width={240} height={240} loading="lazy" className="size-full object-contain" />
           </span>
           <p className="mx-auto max-w-sm text-base font-medium leading-relaxed text-blush">{footer.tagline}</p>

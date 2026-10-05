@@ -3,7 +3,8 @@ import { Heart } from 'lucide-react'
 import { useWishlistStore } from '@/stores'
 import { cn } from '@/lib/utils'
 
-export default function WishlistButton({ dressId, name, className }: { dressId: string; name: string; className?: string }) {
+/** Callers must position it (e.g. `absolute right-3 top-3`); `cn` does not merge conflicting classes. */
+export default function WishlistButton({ dressId, name, className, showLabel = false }: { dressId: string; name: string; className?: string; showLabel?: boolean }) {
   const saved = useWishlistStore((s) => s.ids.includes(dressId))
   const toggle = useWishlistStore((s) => s.toggle)
 
@@ -14,13 +15,15 @@ export default function WishlistButton({ dressId, name, className }: { dressId: 
       aria-pressed={saved}
       aria-label={saved ? `Remove ${name} from saved dresses` : `Save ${name}`}
       className={cn(
-        'relative grid size-11 place-items-center rounded-full bg-ivory/85 text-burgundy shadow-sm backdrop-blur transition-colors hover:bg-ivory',
+        'inline-flex h-11 items-center justify-center gap-2 rounded-full bg-ivory/85 text-burgundy shadow-sm backdrop-blur transition-colors hover:bg-ivory',
+        showLabel ? 'px-4' : 'w-11',
         className,
       )}
     >
       <motion.span key={String(saved)} initial={{ scale: saved ? 0.4 : 1 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 12 }}>
         <Heart className="size-5" strokeWidth={1.6} fill={saved ? 'currentColor' : 'none'} aria-hidden />
       </motion.span>
+      {showLabel && <span className="text-sm font-medium">{saved ? 'Saved' : 'Save'}</span>}
       <AnimatePresence>
         {saved && (
           <motion.span
