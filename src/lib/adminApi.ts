@@ -1,8 +1,9 @@
 /** Admin-only writes to Supabase. Row level security rejects anyone whose profile role is not admin. */
 import { PHOTO_BUCKET, supabase } from './supabase'
 import { imageToBlob } from './image'
+import { assertVideo, mimeFor } from './uploadGuard'
 import { fittingFromRow, rentalFromRow } from './mappers'
-import type { Dress, DressImage, FittingAppointment, PaymentStatus, Rental, RentalStatus } from '@/types'
+import type { Dress, DressImage, DressVideo, FittingAppointment, PaymentStatus, Rental, RentalStatus } from '@/types'
 
 const client = () => {
   if (!supabase) throw new Error('Supabase is not configured. Add your keys to .env and restart.')
@@ -27,6 +28,7 @@ export async function saveDress(id: string, data: Omit<Dress, 'id' | 'createdAt'
     details: data.details,
     sizes: data.sizes,
     images: data.images,
+    video: data.video ?? null,
     size_guide: data.sizeGuide ?? null,
     status: data.status,
     booked_ranges: data.bookedRanges,
@@ -46,17 +48,44 @@ export async function uploadDressImage(dressId: string, file: File): Promise<Dre
   return { url: sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl, path, alt: '' }
 }
 
+/** Uploads the dress clip. The stored name and type come from the sniffed file, never from the uploaded file's own name. */
+export async function uploadDressVideo(dressId: string, file: File): Promise<DressVideo> {
+  const sb = client()
+  const kind = await assertVideo(file)
+  const path = `${dressId}/video-${Date.now()}.${kind}`
+  check((await sb.storage.from(PHOTO_BUCKET).upload(path, file, { contentType: mimeFor(kind) })).error)
+  return { url: sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl, path }
+}
+
+/** Uploads the showroom photo shown behind the boutique doors. */
+export async function uploadShowroomImage(file: File): Promise<{ url: string; path: string }> {
+  const sb = client()
+  const blob = await imageToBlob(file)
+  const path = `showroom/${Date.now()}.jpg`
+  check((await sb.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: 'image/jpeg' })).error)
+  return { url: sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl, path }
+}
+
+/** Uploads the terms and conditions image. Kept larger than dress photos so the small print stays readable. */
+export async function uploadTermsImage(file: File): Promise<{ url: string; path: string }> {
+  const sb = client()
+  const blob = await imageToBlob(file, 2600, 0.88)
+  const path = `terms/${Date.now()}.jpg`
+  check((await sb.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: 'image/jpeg' })).error)
+  return { url: sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl, path }
+}
+
 export async function deleteImages(paths: string[]) {
   if (!supabase || !paths.length) return
   await supabase.storage.from(PHOTO_BUCKET).remove(paths)
 }
 
 export async function deleteDress(dress: Dress) {
-  await deleteImages(dress.images.map((i) => i.path))
+  await deleteImages([...dress.images.map((i) => i.path), ...(dress.video ? [dress.video.path] : [])])
   check((await client().from('dresses').delete().eq('id', dress.id)).error)
 }
 
-export async function saveSetting(key: 'howItWorks' | 'hero' | 'navigation', value: object) {
+export async function saveSetting(key: 'howItWorks' | 'hero' | 'navigation' | 'terms', value: object) {
   check((await client().from('settings').upsert({ key, value, updated_at: new Date().toISOString() })).error)
 }
 

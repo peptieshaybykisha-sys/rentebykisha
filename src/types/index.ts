@@ -1,5 +1,5 @@
 export type CategoryFilter = Category | 'All'
-export type Category = 'Evening' | 'Formal' | 'Cocktail' | 'Bridal' | 'Prom' | 'Events'
+export type Category = 'Long Dress' | 'Short Dress'
 /** Sizes are free text so each dress can use its own labels (XS, 8, Free size...). */
 export type Size = string
 
@@ -7,6 +7,11 @@ export interface DressImage {
   url: string
   path: string // Storage path, used when deleting
   alt: string
+}
+
+export interface DressVideo {
+  url: string
+  path: string // Storage path, used when deleting
 }
 
 export interface DateRange {
@@ -25,6 +30,8 @@ export interface Dress {
   description: string
   details: string[]
   images: DressImage[]
+  /** One short clip (max 5 s) shown in the dress gallery. */
+  video?: DressVideo | null
   /** This dress's own measurements table; the "Size Guide" button hides when empty. */
   sizeGuide?: SizeGuideContent | null
   status: 'available' | 'unavailable'
@@ -156,6 +163,16 @@ export interface NavigationContent {
   }
 }
 
+/** The photo shown inside the boutique doors. No image means the built-in default is used. */
+/** The terms and conditions page is a single image the admin uploads. */
+export interface TermsContent {
+  image?: { url: string; path: string } | null
+}
+
 export interface HeroContent {
-  dressIds: string[] // first one is the centre piece
+  image?: { url: string; path: string } | null
+  focusX?: number // 0-100, which part of the photo stays centred
+  focusY?: number
+  zoom?: number // 1 = fill the doorway
+  brightness?: number // 1 = untouched
 }

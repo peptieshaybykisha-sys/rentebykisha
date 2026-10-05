@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { Ruler, ShieldCheck } from 'lucide-react'
+import { Play, Ruler, ShieldCheck } from 'lucide-react'
 import Container from '@/components/common/Container'
 import { ErrorState, Notice } from '@/components/common/States'
 import { AvailabilityDot } from '@/components/dresses/DressCard'
@@ -38,6 +38,10 @@ function DressView({ dress }: { dress: Dress }) {
   const addToCart = useCartStore((s) => s.add)
 
   const [imgIndex, setImgIndex] = useState(0)
+  // The clip, when there is one, is the last gallery slot, after the photos.
+  const hasVideo = Boolean(dress.video)
+  const videoIndex = dress.images.length
+  const showingVideo = hasVideo && imgIndex === videoIndex
   const [size, setSize] = useState<Size | undefined>(inCart?.size)
   const [range, setRange] = useState<{ start?: string; end?: string }>({ start: inCart?.startDate, end: inCart?.endDate })
   const [guideOpen, setGuideOpen] = useState(false)
@@ -81,12 +85,27 @@ function DressView({ dress }: { dress: Dress }) {
                 transition={{ duration: 0.25 }}
                 className="absolute inset-0"
               >
+                {showingVideo && dress.video ? (
+                  <video
+                    src={dress.video.url}
+                    poster={dress.images[0]?.url}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    controls
+                    preload="metadata"
+                    aria-label={`${dress.name} video`}
+                    className={cn('size-full object-cover', unavailable && 'opacity-70 saturate-50')}
+                  />
+                ) : (
                 <DressPhoto dress={dress} index={imgIndex} priority className={cn('size-full object-cover', unavailable && 'opacity-70 saturate-50')} />
+                )}
               </motion.div>
             </AnimatePresence>
             <WishlistButton dressId={dress.id} name={dress.name} className="absolute right-4 top-4 z-10" />
           </div>
-          <ul className={cn("flex gap-3 lg:flex-col", dress.images.length < 2 && "hidden")} aria-label="Dress photos">
+          <ul className={cn("flex gap-3 lg:flex-col", dress.images.length + (hasVideo ? 1 : 0) < 2 && "hidden")} aria-label="Dress photos and video">
             {dress.images.map((img, i) => (
               <li key={img.path} className="w-1/4 lg:w-20">
                 <button
@@ -103,6 +122,25 @@ function DressView({ dress }: { dress: Dress }) {
                 </button>
               </li>
             ))}
+            {dress.video && (
+              <li className="w-1/4 lg:w-20">
+                <button
+                  type="button"
+                  onClick={() => setImgIndex(videoIndex)}
+                  aria-label="Play video"
+                  aria-current={showingVideo}
+                  className={cn(
+                    'relative block aspect-[3/4] w-full overflow-hidden rounded-xl bg-blush-soft ring-offset-2 ring-offset-cream transition',
+                    showingVideo ? 'ring-2 ring-burgundy' : 'opacity-75 hover:opacity-100',
+                  )}
+                >
+                  <DressPhoto dress={dress} index={0} className="size-full object-cover" />
+                  <span className="absolute inset-0 grid place-items-center bg-burgundy/25">
+                    <Play className="size-6 fill-ivory text-ivory" aria-hidden />
+                  </span>
+                </button>
+              </li>
+            )}
           </ul>
         </div>
 

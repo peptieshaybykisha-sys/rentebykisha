@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ImagePlus, Loader2, Plus, X } from 'lucide-react'
+import { ImagePlus, Loader2, Plus, Video, X } from 'lucide-react'
 import { MoveButtons, NotConfigured } from '@/components/admin/AdminShell'
 import SizeGuideEditor from '@/components/admin/SizeGuideEditor'
 import { Notice } from '@/components/common/States'
@@ -14,11 +14,12 @@ import { Input, Select, Textarea } from '@/components/ui/Field'
 import { CATEGORIES, SIZE_PRESETS } from '@/constants/catalog'
 import { DEFAULT_SIZE_GUIDE } from '@/constants/sizeGuide'
 import { useDress } from '@/hooks/useDresses'
-import { deleteDress, deleteImages, newDressId, saveDress, uploadDressImage } from '@/lib/adminApi'
+import { deleteDress, deleteImages, newDressId, saveDress, uploadDressImage, uploadDressVideo } from '@/lib/adminApi'
+import { MAX_VIDEO_SECONDS } from '@/lib/uploadGuard'
 import { isSupabaseConfigured } from '@/lib/supabase'
 import { cn, formatShort, move } from '@/lib/utils'
 import { notify } from '@/lib/toast'
-import type { Category, DateRange, Dress, DressImage, SizeGuideContent } from '@/types'
+import type { Category, DateRange, Dress, DressImage, DressVideo, SizeGuideContent } from '@/types'
 
 const schema = z.object({
   name: z.string().trim().min(2, 'Give the dress a name.'),
@@ -52,7 +53,10 @@ function Editor({ dress }: { dress?: Dress }) {
   const navigate = useNavigate()
   const [dressId] = useState(() => dress?.id ?? newDressId())
   const [images, setImages] = useState<DressImage[]>(dress?.images ?? [])
+  const [video, setVideo] = useState<DressVideo | null>(dress?.video ?? null)
+  const [videoBusy, setVideoBusy] = useState(false)
   const [removed, setRemoved] = useState<string[]>([])
+  const videoInput = useRef<HTMLInputElement>(null)
   const [sizes, setSizes] = useState<string[]>(dress?.sizes ?? [])
   const [sizeInput, setSizeInput] = useState('')
   const [guide, setGuide] = useState<SizeGuideContent>(() => structuredClone(dress?.sizeGuide ?? DEFAULT_SIZE_GUIDE))
@@ -72,7 +76,7 @@ function Editor({ dress }: { dress?: Dress }) {
     resolver: zodResolver(schema),
     defaultValues: {
       name: dress?.name ?? '',
-      category: dress?.category ?? 'Evening',
+      category: dress?.category ?? 'Long Dress',
       colorName: dress?.colorName ?? '',
       price: dress?.price,
       deposit: dress?.deposit,
@@ -107,6 +111,32 @@ function Editor({ dress }: { dress?: Dress }) {
     }
   }
 
+  const onVideo = async (file?: File) => {
+    if (!file) return
+    setError('')
+    setVideoBusy(true)
+    try {
+      const next = await uploadDressVideo(dressId, file)
+      if (video) {
+        // Replacing: an already-saved clip is deleted on save, a clip uploaded this session right away.
+        if (dress?.video?.path === video.path) setRemoved((r) => [...r, video.path])
+        else void deleteImages([video.path])
+      }
+      setVideo(next)
+    } catch (e) {
+      setError(e instanceof Error ? `Video upload failed: ${e.message}` : 'Video upload failed.')
+    } finally {
+      setVideoBusy(false)
+    }
+  }
+
+  const removeVideo = () => {
+    if (!video) return
+    if (dress?.video?.path === video.path) setRemoved((r) => [...r, video.path])
+    else void deleteImages([video.path])
+    setVideo(null)
+  }
+
   const removeImage = (i: number) => {
     const img = images[i]
     setImages((cur) => cur.filter((_, k) => k !== i))
@@ -131,6 +161,7 @@ function Editor({ dress }: { dress?: Dress }) {
         status: v.status,
         featured: v.featured,
         images: images.map((im) => ({ ...im, alt: im.alt || v.name })),
+        video,
         bookedRanges: blocked,
         createdAt: dress?.createdAt
       })
@@ -187,6 +218,37 @@ function Editor({ dress }: { dress?: Dress }) {
             </button>
           </li>
         </ul>
+      </section>
+
+      <section aria-labelledby="video" className="space-y-3">
+        <h2 id="video" className="font-sans text-lg font-medium text-ink">
+          Video <span className="text-sm font-normal text-muted">(optional)</span>
+        </h2>
+        <p className="text-sm text-muted">One short clip of the dress in motion: MP4 or WebM, up to {MAX_VIDEO_SECONDS} seconds and 20 MB.</p>
+        <input ref={videoInput} type="file" accept="video/mp4,video/webm" className="sr-only" aria-label="Upload video" onChange={(e) => { void onVideo(e.target.files?.[0]); e.target.value = '' }} />
+        {video ? (
+          <div className="w-44 rounded-2xl border border-line bg-ivory p-2">
+            <video src={video.url} controls muted playsInline preload="metadata" className="aspect-[3/4] w-full rounded-xl bg-blush-soft object-cover" />
+            <div className="mt-2 flex justify-between gap-2 text-sm">
+              <button type="button" onClick={() => videoInput.current?.click()} disabled={videoBusy} className="link-underline text-burgundy">
+                Replace
+              </button>
+              <button type="button" onClick={removeVideo} disabled={videoBusy} className="link-underline text-burgundy">
+                Remove
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => videoInput.current?.click()}
+            disabled={videoBusy}
+            className="flex aspect-[3/4] w-44 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-blush bg-ivory text-burgundy transition-colors hover:bg-blush-soft/40"
+          >
+            {videoBusy ? <Loader2 className="size-7 animate-spin" aria-hidden /> : <Video className="size-7" strokeWidth={1.3} aria-hidden />}
+            {videoBusy ? 'Uploading…' : 'Add video'}
+          </button>
+        )}
       </section>
 
       <section aria-labelledby="basics" className="space-y-5">

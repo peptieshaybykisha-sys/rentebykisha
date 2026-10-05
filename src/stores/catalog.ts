@@ -1,12 +1,13 @@
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
-import type { Dress, HeroContent, HowItWorksContent, NavigationContent, SizeGuideContent } from '@/types'
+import type { Dress, HeroContent, HowItWorksContent, NavigationContent, SizeGuideContent, TermsContent } from '@/types'
 
 interface CatalogState {
   dresses: Dress[]
   howItWorks: HowItWorksContent | null
   hero: HeroContent | null
   navigation: NavigationContent | null
+  terms: TermsContent | null
   status: 'loading' | 'ready' | 'error'
   /** True once the settings rows have been read (even when none exist yet). */
   settingsReady: boolean
@@ -17,9 +18,13 @@ export const useCatalog = create<CatalogState>()(() => ({
   howItWorks: null,
   hero: null,
   navigation: null,
+  terms: null,
   status: 'loading',
   settingsReady: false,
 }))
+
+const isVideo = (v: unknown): v is NonNullable<Dress['video']> =>
+  typeof v === 'object' && v !== null && typeof (v as Record<string, unknown>).url === 'string' && typeof (v as Record<string, unknown>).path === 'string'
 
 /** Maps a snake_case database row to the app's Dress shape. */
 export function dressFromRow(r: Record<string, unknown>): Dress {
@@ -27,7 +32,7 @@ export function dressFromRow(r: Record<string, unknown>): Dress {
   return {
     id: String(r.id),
     name: String(r.name ?? 'Untitled dress'),
-    category: (r.category as Dress['category']) ?? 'Evening',
+    category: (r.category as Dress['category']) ?? 'Long Dress',
     colorName: String(r.color_name ?? ''),
     price: Number(r.price ?? 0),
     deposit: Number(r.deposit ?? 0),
@@ -35,6 +40,7 @@ export function dressFromRow(r: Record<string, unknown>): Dress {
     description: String(r.description ?? ''),
     details: arr<string>(r.details),
     images: arr<Dress['images'][number]>(r.images),
+    video: isVideo(r.video) ? r.video : null,
     sizeGuide: (r.size_guide as SizeGuideContent | null) ?? null,
     status: r.status === 'unavailable' ? 'unavailable' : 'available',
     bookedRanges: arr<Dress['bookedRanges'][number]>(r.booked_ranges),
@@ -69,6 +75,7 @@ async function load() {
     howItWorks: null,
     hero: null,
     navigation: null,
+    terms: null,
   }
   for (const row of settings.data ?? []) (next as Record<string, unknown>)[row.key] = row.value
   useCatalog.setState(next)

@@ -1,10 +1,10 @@
 import { MAX_DRESS_PHOTO_DIMENSION } from '@/constants/catalog'
 import { MAX_UPLOAD_BYTES } from '@/constants/checkout'
+import { assertImage } from './uploadGuard'
 
 /** Validates and shrinks a receipt photo so it fits comfortably in local storage. */
 export async function receiptToDataUrl(file: File, maxDim = 900, quality = 0.72): Promise<string> {
-  if (!file.type.startsWith('image/')) throw new Error('Please upload an image (JPG or PNG).')
-  if (file.size > MAX_UPLOAD_BYTES) throw new Error('That image is too large. Please choose one under 8 MB.')
+  await assertImage(file, MAX_UPLOAD_BYTES)
 
   const src = await new Promise<string>((resolve, reject) => {
     const r = new FileReader()
@@ -32,7 +32,7 @@ export async function receiptToDataUrl(file: File, maxDim = 900, quality = 0.72)
 
 /** Resizes a dress photo before upload so pages stay fast. */
 export async function imageToBlob(file: File, maxDim = MAX_DRESS_PHOTO_DIMENSION, quality = 0.84): Promise<Blob> {
-  if (!file.type.startsWith('image/')) throw new Error('Please choose an image file.')
+  await assertImage(file, 15 * 1024 * 1024)
   const url = URL.createObjectURL(file)
   try {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
