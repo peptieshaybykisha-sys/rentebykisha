@@ -13,6 +13,7 @@ export const DEFAULT_NAVIGATION: NavigationContent = {
     { to: '/dresses', label: 'Dresses' },
     { to: '/collections', label: 'Collections' },
     { to: '/how-it-works', label: 'How It Works' },
+    { to: '/terms', label: 'Terms & Conditions' },
   ],
   footer: {
     tagline: 'Beautiful dresses for the moments you will remember. Rent it, wear it, return it.',
@@ -25,6 +26,7 @@ export const DEFAULT_NAVIGATION: NavigationContent = {
           { label: 'Schedule a fitting', to: '/fitting' },
           { label: 'My rentals', to: '/rentals' },
           { label: 'Rental cart', to: '/cart' },
+          { label: 'Terms & conditions', to: '/terms' },
         ],
       },
       {
@@ -62,7 +64,8 @@ export const ADMIN_NAV = [
   { to: '/admin/dresses', label: 'Dresses' },
   { to: '/admin/fittings', label: 'Fittings' },
   { to: '/admin/users', label: 'Users' },
-  { to: '/admin/hero', label: 'Hero dresses' },
+  { to: '/admin/hero', label: 'Showroom photo' },
   { to: '/admin/how-it-works', label: 'How it works' },
+  { to: '/admin/terms', label: 'Terms & conditions' },
   { to: '/admin/navigation', label: 'Navbar & footer' },
 ]

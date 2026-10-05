@@ -21,7 +21,8 @@ const RentalDetail = lazy(() => import('@/pages/Rentals/RentalDetail'))
 const Wishlist = lazy(() => import('@/pages/Wishlist'))
 const Fitting = lazy(() => import('@/pages/Fitting'))
 const HowItWorks = lazy(() => import('@/pages/HowItWorks'))
-const AdminRentals = lazy(() => import('@/pages/Admin/AdminRentals'))
+const Terms = lazy(() => import('@/pages/Terms'))
+const AdminRentals =lazy(() => import('@/pages/Admin/AdminRentals'))
 const AdminRentalDetail = lazy(() => import('@/pages/Admin/AdminRentalDetail'))
 const AdminFittings = lazy(() => import('@/pages/Admin/AdminFittings'))
 const AdminUsers = lazy(() => import('@/pages/Admin/AdminUsers'))
@@ -30,7 +31,8 @@ const DressForm = lazy(() => import('@/pages/Admin/DressForm'))
 const HeroEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.HeroEditor })))
 const HowItWorksEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.HowItWorksEditor })))
 const NavigationEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.NavigationEditor })))
-const NotFound = lazy(() => import('@/pages/NotFound'))
+const TermsEditor = lazy(() => import('@/pages/Admin/SettingEditors').then((m) => ({ default: m.TermsEditor })))
+const NotFound =lazy(() => import('@/pages/NotFound'))
 
 export default function AppRoutes() {
   return (
@@ -46,6 +48,7 @@ export default function AppRoutes() {
           <Route path="dresses/:id" element={<DressForm />} />
           <Route path="hero" element={<HeroEditor />} />
           <Route path="how-it-works" element={<HowItWorksEditor />} />
+          <Route path="terms" element={<TermsEditor />} />
           <Route path="navigation" element={<NavigationEditor />} />
         </Route>
       </Route>
@@ -58,6 +61,7 @@ export default function AppRoutes() {
         <Route path="wishlist" element={<Wishlist />} />
         <Route path="fitting" element={<Fitting />} />
         <Route path="how-it-works" element={<HowItWorks />} />
+        <Route path="terms" element={<Terms />} />
         <Route path="login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="reset-password" element={<ResetPassword />} />
