@@ -15,6 +15,8 @@ import { DOOR_ANGLES, DOOR_ANGLES_REDUCED, DOOR_PROGRESS } from '@/constants/hom
 import { cn } from '@/lib/utils'
 import Door, { DoorFrame, Fanlight, Spandrel } from './Door'
 import Showroom from './Showroom'
+import { WallPoster } from './HeroPosters'
+import { LeftSuite, RightSuite } from './SideDecor'
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
 const smooth = (t: number) => t * t * (3 - 2 * t)
@@ -66,6 +68,7 @@ export default function BoutiqueHero() {
   const y = useTransform(p, (v) => `calc(-50% + var(--hero-shift) * ${reduce ? 1 : 1 - smooth(clamp01((v - 0.2) / 0.8))})`)
 
   const introOpacity = useTransform(p, [0, 0.12], [1, 0])
+  const vignette = useTransform(p, [0, 0.4], [1, 0])
   const introY = useTransform(p, [0, 0.12], [0, 16])
   const outroOpacity = useTransform(p, [0.8, 0.95], [0, 1])
   const veilOpacity = useTransform(p, [0.7, 1], [0, 1])
@@ -94,8 +97,12 @@ export default function BoutiqueHero() {
           </div>
 
           {/* wall mouldings, floor and the plaster architrave */}
-          <div aria-hidden className="dr-wallpanel -left-[calc(15rem+8.5rem)] hidden md:block" />
-          <div aria-hidden className="dr-wallpanel -right-[calc(15rem+8.5rem)] hidden md:block" />
+          <motion.div style={{ opacity: introOpacity }} className="hidden md:block">
+            <WallPoster title="Timeless Elegance" caption="From intimate gatherings to life's grandest moments." className="-left-[calc(11rem+9rem)] bottom-0 top-[10%] w-[11rem]" />
+            <WallPoster title="Curated Collections" caption="Designer-inspired dresses for every occasion." tone="wine" className="left-[calc(100%+9rem)] bottom-0 top-[10%] w-[11rem]" />
+            <LeftSuite className="absolute -bottom-[0.8rem] -left-[32.2rem] z-[1] hidden aspect-[114/198] w-[11rem] xl:block" />
+            <RightSuite className="absolute -bottom-[0.8rem] left-[calc(100%+19rem)] z-[1] hidden aspect-[120/222] w-[14.6rem] xl:block" />
+          </motion.div>
           <div aria-hidden className="dr-floor" />
           <DoorFrame />
 
@@ -137,6 +144,13 @@ export default function BoutiqueHero() {
           {/* doorstep */}
           <div aria-hidden className="absolute left-1/2 top-full mt-[2.3rem] h-3 w-[calc(100%+6.4rem)] md:w-[calc(100%+16rem)] -translate-x-1/2 rounded-b-md bg-gradient-to-b from-[#f8f0ee] to-[#e6d6d4] shadow-[0_14px_20px_-10px_rgba(90,16,37,0.3)]" />
         </motion.div>
+
+        {/* soft vignette: the corners of the room fall into shadow */}
+        <motion.div
+          aria-hidden
+          style={{ opacity: vignette }}
+          className="pointer-events-none absolute inset-0 [background:radial-gradient(130%_95%_at_50%_46%,transparent_52%,rgba(90,16,37,0.22)_100%),linear-gradient(180deg,rgba(90,16,37,0.10),transparent_16%)]"
+        />
 
         {/* opening prompts */}
         <motion.div

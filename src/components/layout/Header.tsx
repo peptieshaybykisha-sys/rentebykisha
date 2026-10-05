@@ -96,6 +96,7 @@ export default function Header() {
                 <User className="size-[1.35rem]" strokeWidth={1.6} />
               </IconLink>
             </span>
+            <span aria-hidden className="mx-2 hidden h-6 w-px bg-burgundy/25 md:block" />
             <IconLink to="/cart" label="Rental cart">
               <ShoppingBag className="size-[1.35rem]" strokeWidth={1.6} />
               <Badge n={cartCount} />

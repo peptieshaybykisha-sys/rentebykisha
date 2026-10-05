@@ -87,24 +87,100 @@ function Leaf({ x, y, rot, s = 1 }: { x: number; y: number; rot: number; s?: num
   return <ellipse cx={x} cy={y} rx={6 * s} ry={2.6 * s} transform={`rotate(${rot} ${x} ${y})`} fill="url(#dr-leafg)" />
 }
 
-const COLUMN_VINE = {
-  stem: 'M30 320 C10 290 50 262 28 232 S8 176 34 148 S52 90 26 60 S20 20 36 0',
-  leaves: [[18, 296, -30], [42, 270, 20], [14, 244, -60], [38, 214, 30], [20, 188, -20], [44, 160, 40], [18, 132, -50], [42, 104, 25], [14, 76, -35], [36, 44, 30], [22, 22, -40]],
-  blooms: [[22, 250, 6.5], [40, 172, 5.5], [24, 116, 6.5], [38, 56, 5], [30, 8, 4.5], [14, 290, 4]],
-} as const
+/* A rose vine spiralling up ONE column. x swings across the 2rem shaft as y climbs; where the stem is crossing the face it is drawn
+   solid with leaves and buds, and where it passes round the back it is a faint line, so it reads as wrapped round the stone.
+   Sized to match the fine vines on the wall: small three-leaf sets, tiny buds, a few small open roses. */
+const W = 32
+const H = 380
+const PERIOD = 78
+const hx = (y: number, ph: number) => W / 2 + 14.5 * Math.sin(((y + ph) / PERIOD) * Math.PI * 2)
+const facing = (y: number, ph: number) => Math.cos(((y + ph) / PERIOD) * Math.PI * 2) > 0
+const rnd = (n: number) => {
+  const v = Math.sin(n * 127.1) * 43758.5453
+  return v - Math.floor(v)
+}
 
-/** A rose vine winding up a column. Mirrored for the right-hand side. */
-export function ColumnVine({ className }: { className?: string }) {
+function buildVine(ph: number) {
+  const front: string[] = []
+  const back: string[] = []
+  for (let y = 0; y <= H; y += 2) {
+    const target = facing(y, ph) ? front : back
+    const cmd = target.length && facing(y - 2, ph) === facing(y, ph) ? 'L' : 'M'
+    target.push(`${cmd}${hx(y, ph).toFixed(1)} ${y}`)
+  }
+  const leaves: { x: number; y: number; rot: number; s: number }[] = []
+  const buds: { x: number; y: number; r: number; open: boolean }[] = []
+  for (let y = 6, i = 0; y < H; y += 8, i++) {
+    if (!facing(y, ph)) continue
+    const dx = hx(y + 1, ph) - hx(y - 1, ph)
+    const tangent = (Math.atan2(2, dx) * 180) / Math.PI
+    const side = i % 2 ? 1 : -1
+    leaves.push({
+      x: hx(y, ph),
+      y,
+      rot: tangent + side * (50 + rnd(i + ph) * 25),
+      s: 0.8 + rnd(i + 30 + ph) * 0.35,
+    })
+    if (i % 4 === 1)
+      buds.push({
+        x: hx(y, ph) - side * 3.4,
+        y: y - 1,
+        r: i % 8 === 1 ? 4.2 : 2.6,
+        open: i % 8 === 1,
+      })
+  }
+  return { front: front.join(' '), back: back.join(' '), leaves, buds }
+}
+const VINES = [buildVine(0), buildVine(31)]
+
+function LeafSet({ x, y, rot, s }: { x: number; y: number; rot: number; s: number }) {
   return (
-    <svg aria-hidden viewBox="0 0 60 320" className={className} fill="none">
-      <path d={COLUMN_VINE.stem} stroke="#6f8f4a" strokeWidth="2" strokeLinecap="round" />
-      {COLUMN_VINE.leaves.map(([x, y, r]) => (
-        <Leaf key={`${x}-${y}`} x={x} y={y} rot={r} />
+    <g transform={`translate(${x} ${y}) rotate(${rot}) scale(${s})`}>
+      {[-40, 0, 40].map((ang, i) => (
+        <g key={ang} transform={`rotate(${ang})`}>
+          <path
+            d={i === 1 ? 'M0 0 C2 -2 5 -2 8 0 C5 2 2 2 0 0Z' : 'M0 0 C1.6 -1.6 4 -1.6 6.4 0 C4 1.6 1.6 1.6 0 0Z'}
+            fill={i === 1 ? 'url(#dr-leafg)' : 'url(#dr-leafd)'}
+            stroke="#2c4a22"
+            strokeOpacity="0.3"
+            strokeWidth="0.25"
+          />
+        </g>
       ))}
-      {COLUMN_VINE.blooms.map(([x, y, r]) => (
-        <Bloom key={`${x}-${y}`} x={x} y={y} r={r} />
-      ))}
-    </svg>
+    </g>
+  )
+}
+
+/** A rose vine twined round one column. Pass the column's own offset via style. */
+export function ColumnVine({ className, style, variant = 0 }: { className?: string; style?: CSSProperties; variant?: 0 | 1 }) {
+  const v = VINES[variant]
+  return (
+    <div aria-hidden className={cn('overflow-hidden', className)} style={style}>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" className="size-full" style={{ filter: 'drop-shadow(1px 1.5px 1px rgba(40,18,22,0.3))' }} fill="none">
+        <path d={v.back} stroke="#5d5a33" strokeOpacity="0.18" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={v.front} stroke="#5d5a33" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        {v.leaves.map((l) => (
+          <LeafSet key={l.y} {...l} />
+        ))}
+        {v.buds.map((b) => (
+          <g key={b.y}>
+            {b.open ? (
+              <>
+                {[0, 72, 144, 216, 288].map((r) => (
+                  <circle key={r} cx={b.x + Math.cos((r * Math.PI) / 180) * b.r * 0.55} cy={b.y + Math.sin((r * Math.PI) / 180) * b.r * 0.55} r={b.r * 0.55} fill="#e9a9b3" />
+                ))}
+                <circle cx={b.x} cy={b.y} r={b.r * 0.35} fill="#c4687c" />
+              </>
+            ) : (
+              <>
+                <circle cx={b.x} cy={b.y} r={b.r} fill="#f0b4c2" />
+                <circle cx={b.x - 0.5} cy={b.y - 0.5} r={b.r * 0.45} fill="#fbe0e6" />
+              </>
+            )}
+          </g>
+        ))}
+      </svg>
+    </div>
   )
 }
 
@@ -114,10 +190,27 @@ function Garland({ className }: { className?: string }) {
     <svg aria-hidden viewBox="0 0 160 90" className={className} fill="none">
       <path d="M4 70 C30 70 40 40 70 38 S112 30 130 8" stroke="#6f8f4a" strokeWidth="2" strokeLinecap="round" />
       <path d="M40 52 C48 66 62 70 74 66" stroke="#6f8f4a" strokeWidth="1.4" strokeLinecap="round" />
-      {[[16, 66, -20], [30, 56, -50], [50, 44, 30], [64, 52, 60], [82, 38, -30], [98, 44, 40], [114, 24, -40], [126, 14, 20], [58, 68, 25]].map(([x, y, r]) => (
+      {[
+        [16, 66, -20],
+        [30, 56, -50],
+        [50, 44, 30],
+        [64, 52, 60],
+        [82, 38, -30],
+        [98, 44, 40],
+        [114, 24, -40],
+        [126, 14, 20],
+        [58, 68, 25],
+      ].map(([x, y, r]) => (
         <Leaf key={`${x}-${y}`} x={x} y={y} rot={r} s={1.15} />
       ))}
-      {[[24, 62, 6], [58, 42, 7.5], [86, 36, 6.5], [112, 28, 5.5], [132, 12, 4.5], [72, 64, 4.5]].map(([x, y, r]) => (
+      {[
+        [24, 62, 6],
+        [58, 42, 7.5],
+        [86, 36, 6.5],
+        [112, 28, 5.5],
+        [132, 12, 4.5],
+        [72, 64, 4.5],
+      ].map(([x, y, r]) => (
         <Bloom key={`${x}-${y}`} x={x} y={y} r={r} />
       ))}
     </svg>
@@ -144,7 +237,17 @@ export function DoorFrame() {
     <div aria-hidden className="pointer-events-none absolute inset-0 flex flex-col">
       <div className="relative aspect-[2/1] w-full flex-none">
         {RINGS.map(([d, c]) => (
-          <div key={c} className="dr-ring dr-stone" style={{ ['--c' as string]: c, top: `-${d}rem`, left: `-${d}rem`, right: `-${d}rem`, bottom: 0 }} />
+          <div
+            key={c}
+            className="dr-ring dr-stone"
+            style={{
+              ['--c' as string]: c,
+              top: `-${d}rem`,
+              left: `-${d}rem`,
+              right: `-${d}rem`,
+              bottom: 0,
+            }}
+          />
         ))}
         <div className="dr-keystone dr-stone" />
         <Garland className="absolute -left-12 -top-5 z-[3] w-40" />
@@ -159,7 +262,8 @@ export function DoorFrame() {
             <div className="dr-plinth dr-stone" style={{ [s]: '-7.4rem' }} />
             <Column style={{ [s]: '-7rem' }} />
             <Column style={{ [s]: '-4.5rem' }} />
-            <ColumnVine className={cn('absolute -bottom-1 top-6 z-[3] h-[calc(100%-1.5rem)] w-auto', s === 'left' ? '-left-[7.2rem]' : '-right-[7.2rem] -scale-x-100')} />
+            <ColumnVine variant={0} className="absolute bottom-[1.6rem] top-[3rem] z-[3] w-8" style={{ [s]: '-7rem' }} />
+            <ColumnVine variant={1} className="absolute bottom-[1.6rem] top-[3rem] z-[3] w-8" style={{ [s]: '-4.5rem' }} />
           </div>
         ))}
       </div>
@@ -169,6 +273,15 @@ export function DoorFrame() {
           <radialGradient id="dr-petal" cx="0.4" cy="0.35" r="0.75">
             <stop offset="0" stopColor="#fde4ea" />
             <stop offset="1" stopColor="#ec8aa4" />
+          </radialGradient>
+          <linearGradient id="dr-leafd" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#6f9a52" />
+            <stop offset="1" stopColor="#2f5a2c" />
+          </linearGradient>
+          <radialGradient id="dr-rosed" cx="0.38" cy="0.32" r="0.8">
+            <stop offset="0" stopColor="#f6cfd0" />
+            <stop offset="0.6" stopColor="#dc9aa0" />
+            <stop offset="1" stopColor="#bd6a76" />
           </radialGradient>
           <linearGradient id="dr-leafg" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#9ab86e" />
