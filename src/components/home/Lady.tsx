@@ -3,7 +3,6 @@
  *  y = 0, the chin is at 1H, shoulders at 1⅓H, bust at 2H, waist and elbows at 3H, hips at 4H, knees at 6H and ankles at 8½H (y grows downward, x = 0 is her centre line).
  *  Lit from the left, the side the doorway is on. Colour ids are prefixed "lady-" / "bag-" to stay unique on the page. */
 
-const SKIN_LIGHT = '#f7dcc6'
 const SKIN_MID = '#eab99c'
 const GOLD = '#c9a45c'
 
