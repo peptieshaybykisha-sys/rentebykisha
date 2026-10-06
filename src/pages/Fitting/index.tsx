@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { addDays, getDay, isBefore, startOfDay } from 'date-fns'
 import { z } from 'zod'
@@ -36,15 +36,15 @@ export default function Fitting() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: { name: user?.name ?? '', phone: user?.phone ?? '', dressId: '', date: '', time: '' },
   })
-  const date = watch('date')
-  const time = watch('time')
+  const date = useWatch({ control, name: 'date' })
+  const time = useWatch({ control, name: 'time' })
   const earliest = addDays(startOfDay(new Date()), 1)
   const slotsLoaded = !!date && taken?.date === date
 

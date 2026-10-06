@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { CalendarDays, Check, ImagePlus, Truck, Store } from 'lucide-react'
@@ -88,10 +88,10 @@ export function DetailsStep({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm<DetailsValues>({ resolver: zodResolver(detailsSchema), defaultValues: defaults })
-  const fulfillment = watch('fulfillment')
+  const fulfillment = useWatch({ control, name: 'fulfillment' })
   const getDress = useDressLookup()
 
   const options: { value: Fulfillment; title: string; text: string; icon: typeof Truck }[] = [

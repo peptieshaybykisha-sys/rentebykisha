@@ -190,12 +190,22 @@ export function TermsEditor() {
 
 function TermsForm({ initial }: { initial: TermsContent | null }) {
   const fileInput = useRef<HTMLInputElement>(null)
-  const [image, setImage] = useState(initial?.image ?? null)
-  const [file, setFile] = useState<File | null>(null)
+  const initialImages = useMemo(() => termsImages(initial), [initial])
+  const [items, setItems] = useState<TermsItem[]>(() => initialImages.map((img) => ({ key: img.path, saved: img, preview: img.url })))
+  const itemsRef = useRef(items)
+  useEffect(() => { itemsRef.current = items })
+  useEffect(() => () => { for (const it of itemsRef.current) if (it.file) URL.revokeObjectURL(it.preview) }, [])
 
-  const preview = useMemo(() => (file ? URL.createObjectURL(file) : ''), [file])
-  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
-  const shown = preview || image?.url
+  const add = (files: FileList | null) => {
+    if (!files?.length) return
+    const added = Array.from(files).map((file) => ({ key: `new-${Date.now()}-${Math.random()}`, file, preview: URL.createObjectURL(file) }))
+    setItems((list) => [...list, ...added])
+  }
+  const remove = (key: string) => {
+    const gone = items.find((it) => it.key === key)
+    if (gone?.file) URL.revokeObjectURL(gone.preview)
+    setItems((list) => list.filter((it) => it.key !== key))
+  }
 
   const save = async () => {
     const uploaded = file ? await uploadTermsImage(file) : null
