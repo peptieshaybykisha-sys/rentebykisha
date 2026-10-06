@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { addDays, getDay, isBefore, startOfDay } from 'date-fns'
@@ -196,14 +195,6 @@ export default function Fitting() {
           <Button type="submit" size="lg" loading={isSubmitting} className="mt-6 w-full">
             Book my fitting
           </Button>
-          {!user && (
-            <p className="mt-3 text-center text-sm text-muted">
-              <Link to="/login" className="link-underline text-burgundy">
-                Log in
-              </Link>{' '}
-              to see your fittings in your account.
-            </p>
-          )}
         </div>
       </form>
     </Container>

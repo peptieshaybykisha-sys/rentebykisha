@@ -91,13 +91,14 @@ expect('customer can update own name', (await run('authenticated', ANA, `update 
 expect('customer cannot change own email column', !(await run('authenticated', ANA, `update public.profiles set email = 'x@x.com' where id = '${ANA}'`)).ok)
 
 // ---- rentals via create_rental
-const customer = JSON.stringify({ name: 'Ana Cruz', email: 'ana@x.com', phone: '09171234567' })
+const customer = JSON.stringify({ name: 'Ana Cruz', email: 'forged@evil.com', phone: '09171234567' })
 const item = (id, s, e, size = 'M') => JSON.stringify([{ dressId: id, size, startDate: s, endDate: e }])
 const create = (sub, items, ful = 'delivery', addr = '12 Rose St, Makati', receipt = `${ANA}/r.jpg`) =>
   run('authenticated', sub, 'select public.create_rental($1::jsonb, $2::jsonb, $3, $4, $5, $6) as id', [items, customer, ful, addr, null, receipt])
 
 expect('anonymous cannot create a rental', !(await run('anon', '', 'select public.create_rental($1::jsonb,$2::jsonb,$3,$4,$5,$6)', [item(D, day(10), day(12)), customer, 'pickup', null, null, 'x/y.jpg'])).ok)
 const r1 = await create(ANA, item(D, day(10), day(12)))
+expect('rental email comes from the account, not the form', (await run('authenticated', ANA, 'select customer_email from public.rentals where id = $1', [r1.rows[0].id])).rows[0].customer_email === 'ana@x.com')
 expect('customer can create a rental', r1.ok && /^REN-\d{8}-001$/.test(r1.rows[0].id), r1.error)
 const RID = r1.rows[0]?.id
 const row = (await db.query(`select * from public.rentals where id = $1`, [RID])).rows[0]
@@ -152,14 +153,15 @@ expect('cannot save a wishlist for someone else', !(await run('authenticated', B
 const fit = (sub, date, time) => run(sub ? 'authenticated' : 'anon', sub ?? '', 'select public.book_fitting($1,$2,$3,$4,$5) as id', ['Ana Cruz', '09171234567', null, date, time])
 const mon = (() => { let d = new Date(Date.now() + 5 * 864e5); while (d.getDay() === 0) d = new Date(+d + 864e5); return d.toISOString().slice(0, 10) })()
 const sun = (() => { let d = new Date(Date.now() + 3 * 864e5); while (d.getDay() !== 0) d = new Date(+d + 864e5); return d.toISOString().slice(0, 10) })()
-const g = await fit(null, mon, '10:00 AM'); expect('guest can book a fitting', g.ok, g.error)
-expect('same slot cannot be booked twice', (await fit(ANA, mon, '10:00 AM')).error?.includes('just taken'))
+expect('guest cannot book a fitting', !(await fit(null, mon, '10:00 AM')).ok)
+const g = await fit(ANA, mon, '10:00 AM'); expect('customer can book a fitting', g.ok, g.error)
+expect('same slot cannot be booked twice', (await fit(BEN, mon, '10:00 AM')).error?.includes('just taken'))
 expect('taken slots are visible to everyone', (await run('anon', '', `select public.fitting_taken('${mon}') as t`)).rows[0].t.includes('10:00 AM'))
 expect('Sundays are closed', (await fit(ANA, sun, '11:00 AM')).error?.includes('Sundays'))
 expect('odd times are rejected', (await fit(ANA, mon, '9:15 PM')).error?.includes('available times'))
 expect('past dates are rejected', (await fit(ANA, day(-1), '11:00 AM')).error?.includes('tomorrow'))
 await fit(ANA, mon, '11:00 AM')
-expect('customer sees only own fittings', (await run('authenticated', ANA, 'select * from public.fittings')).rows.length === 1 && (await run('authenticated', BEN, 'select * from public.fittings')).rows.length === 0)
+expect('customer sees only own fittings', (await run('authenticated', ANA, 'select * from public.fittings')).rows.length === 2 && (await run('authenticated', BEN, 'select * from public.fittings')).rows.length === 0)
 expect('guest cannot read fittings', (await run('anon', '', 'select * from public.fittings')).rows?.length === 0)
 
 // ---- storage policies
