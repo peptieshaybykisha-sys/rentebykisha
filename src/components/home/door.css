@@ -290,18 +290,31 @@
   width: 300vmax;
   height: 100vmax;
   translate: -50% 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f1e3e1 0%, #f4e8e6 22%, #efdfdd 100%);
+}
+/* polished marble tiles receding toward the wall: perspective grid, checker tint and soft sheen */
+.dr-floor::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 0;
+  transform: perspective(46rem) rotateX(58deg);
   background:
-    repeating-linear-gradient(90deg, transparent 0 7.5rem, rgba(150, 100, 108, 0.22) 7.5rem calc(7.5rem + 1px)),
-    linear-gradient(180deg, #e9d3d3 0%, #f6ecea 6%, #f2e4e2 40%, #efe0de 100%);
+    repeating-linear-gradient(90deg, transparent 0 11rem, rgba(140, 92, 100, 0.1) 11rem calc(11rem + 1px)),
+    repeating-linear-gradient(180deg, transparent 0 11rem, rgba(140, 92, 100, 0.1) 11rem calc(11rem + 1px));
+  opacity: 0.7;
+  -webkit-mask-image: linear-gradient(180deg, #000 25%, transparent 70%);
+  mask-image: linear-gradient(180deg, #000 25%, transparent 70%);
 }
 .dr-floor::after {
   content: '';
   position: absolute;
   inset: 0;
-  mix-blend-mode: soft-light;
-  background: repeating-linear-gradient(62deg, transparent 0 8%, rgba(255, 255, 255, 0.9) 8% 20%, transparent 20% 30%);
-  -webkit-mask-image: linear-gradient(180deg, #000, transparent 45%);
-  mask-image: linear-gradient(180deg, #000, transparent 45%);
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(90, 30, 44, 0.05), transparent 1.5rem),
+    radial-gradient(28rem 22rem at 50% 0, rgba(255, 244, 232, 0.35), transparent 70%);
 }
 
 /* the hanging sign swings gently from its chain */
@@ -312,4 +325,9 @@
 @keyframes dr-sway {
   0%, 100% { transform: rotate(-1.4deg); }
   50% { transform: rotate(1.4deg); }
+}
+
+/* soft mirror-floor reflection of the set pieces */
+.dr-reflect {
+  -webkit-box-reflect: below 0 linear-gradient(transparent 62%, rgba(255, 255, 255, 0.28));
 }

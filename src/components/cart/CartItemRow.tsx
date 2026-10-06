@@ -35,7 +35,7 @@ export default function CartItemRow({ item, dress }: { item: CartItem; dress: Dr
       className="rounded-[1.75rem] border border-line bg-ivory p-4 sm:p-5"
     >
       <div className="flex gap-4 sm:gap-6">
-        <Link to={`/dresses/${dress.id}`} className="block w-24 shrink-0 overflow-hidden rounded-2xl bg-blush-soft sm:w-32" aria-label={`View ${dress.name}`}>
+        <Link to={`/dresses/${dress.id}`} className="block h-fit w-24 shrink-0 self-start overflow-hidden rounded-2xl bg-blush-soft sm:w-32" aria-label={`View ${dress.name}`}>
           <div className="aspect-[3/4]">
             <DressPhoto dress={dress} className="size-full object-cover" />
           </div>
