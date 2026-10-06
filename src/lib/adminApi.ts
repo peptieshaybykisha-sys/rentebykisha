@@ -70,7 +70,7 @@ export async function uploadShowroomImage(file: File): Promise<{ url: string; pa
 export async function uploadTermsImage(file: File): Promise<{ url: string; path: string }> {
   const sb = client()
   const blob = await imageToBlob(file, 2600, 0.88)
-  const path = `terms/${Date.now()}.jpg`
+  const path = `terms/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`
   check((await sb.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: 'image/jpeg' })).error)
   return { url: sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl, path }
 }

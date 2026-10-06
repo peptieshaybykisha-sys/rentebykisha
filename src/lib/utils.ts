@@ -34,3 +34,8 @@ export function move<T>(list: T[], from: number, to: number): T[] {
   next.splice(to, 0, item)
   return next
 }
+
+/** The terms images in order, including pages saved back when there was only one. */
+export function termsImages(terms: { images?: { url: string; path: string }[]; image?: { url: string; path: string } | null } | null | undefined) {
+  return terms?.images ?? (terms?.image ? [terms.image] : [])
+}
