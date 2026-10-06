@@ -164,8 +164,10 @@ export interface NavigationContent {
 }
 
 /** The photo shown inside the boutique doors. No image means the built-in default is used. */
-/** The terms and conditions page is a single image the admin uploads. */
+/** The terms and conditions page is made of one or more images the admin uploads, shown in order. */
 export interface TermsContent {
+  images?: { url: string; path: string }[]
+  /** Older saves held a single image; read it through termsImages(). */
   image?: { url: string; path: string } | null
 }
 

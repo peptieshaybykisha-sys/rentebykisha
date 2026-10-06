@@ -11,7 +11,7 @@ import { DEFAULT_SHOWROOM, SHOWROOM_LIMITS } from '@/constants/home'
 import { DEFAULT_HOW_IT_WORKS, MAX_STEPS, STEP_ICON_NAMES, STEP_ICONS } from '@/constants/howItWorks'
 import { deleteImages, saveSetting, uploadShowroomImage, uploadTermsImage } from '@/lib/adminApi'
 import { isSupabaseConfigured } from '@/lib/supabase'
-import { move } from '@/lib/utils'
+import { move, termsImages } from '@/lib/utils'
 import { notify } from '@/lib/toast'
 import { useCatalog } from '@/stores/catalog'
 import type { HeroContent, HowItWorksContent, NavigationContent, NavItem, StepIconName, TermsContent } from '@/types'
@@ -188,45 +188,64 @@ export function TermsEditor() {
   return <TermsForm initial={saved} />
 }
 
+type TermsItem = { key: string; saved?: { url: string; path: string }; file?: File; preview: string }
+
 function TermsForm({ initial }: { initial: TermsContent | null }) {
   const fileInput = useRef<HTMLInputElement>(null)
-  const [image, setImage] = useState(initial?.image ?? null)
-  const [file, setFile] = useState<File | null>(null)
+  const initialImages = useMemo(() => termsImages(initial), [initial])
+  const [items, setItems] = useState<TermsItem[]>(() => initialImages.map((img) => ({ key: img.path, saved: img, preview: img.url })))
+  const itemsRef = useRef(items)
+  itemsRef.current = items
+  useEffect(() => () => { for (const it of itemsRef.current) if (it.file) URL.revokeObjectURL(it.preview) }, [])
 
-  const preview = useMemo(() => (file ? URL.createObjectURL(file) : ''), [file])
-  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
-  const shown = preview || image?.url
+  const add = (files: FileList | null) => {
+    if (!files?.length) return
+    const added = Array.from(files).map((file) => ({ key: `new-${Date.now()}-${Math.random()}`, file, preview: URL.createObjectURL(file) }))
+    setItems((list) => [...list, ...added])
+  }
+  const remove = (key: string) => {
+    const gone = items.find((it) => it.key === key)
+    if (gone?.file) URL.revokeObjectURL(gone.preview)
+    setItems((list) => list.filter((it) => it.key !== key))
+  }
 
   const save = async () => {
-    const uploaded = file ? await uploadTermsImage(file) : null
-    const next = uploaded ?? image
-    await saveSetting('terms', { image: next } satisfies TermsContent)
-    if (initial?.image && initial.image.path !== next?.path) void deleteImages([initial.image.path])
-    setFile(null)
-    setImage(next)
+    const next: { url: string; path: string }[] = []
+    for (const it of items) next.push(it.saved ?? (await uploadTermsImage(it.file!)))
+    await saveSetting('terms', { images: next } satisfies TermsContent)
+    // Tidy up removed images once the new setting is safely saved.
+    const kept = new Set(next.map((i) => i.path))
+    const stale = initialImages.filter((i) => !kept.has(i.path)).map((i) => i.path)
+    if (stale.length) void deleteImages(stale)
+    for (const it of items) if (it.file) URL.revokeObjectURL(it.preview)
+    setItems(next.map((img) => ({ key: img.path, saved: img, preview: img.url })))
   }
 
   return (
-    <EditorFrame title="Terms & conditions" intro="Upload an image of your terms and conditions. Guests see it on the Terms & Conditions page. If there is no image, the page says Coming soon." onSave={save}>
+    <EditorFrame title="Terms & conditions" intro="Upload one or more images of your terms and conditions. Guests see them in this order on the Terms & Conditions page. If there are no images, the page says Coming soon." onSave={save}>
       <section aria-labelledby="terms-image" className="space-y-3">
         <h2 id="terms-image" className="font-sans text-lg font-medium text-ink">
-          Image
+          Images
         </h2>
-        <p className="text-sm text-muted">{!shown ? 'No image yet. The page shows Coming soon.' : file ? `New image ready: ${file.name}. Save to publish it.` : 'Showing your uploaded image.'}</p>
-        {shown && <img src={shown} alt="Terms and conditions preview" className="h-auto w-full max-w-md rounded-2xl ring-1 ring-line" />}
-        <input ref={fileInput} type="file" accept="image/*" className="sr-only" aria-label="Upload terms and conditions image" onChange={(e) => { setFile(e.target.files?.[0] ?? null); e.target.value = '' }} />
-        <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" size="sm" onClick={() => fileInput.current?.click()}>
-            <ImagePlus className="size-4" aria-hidden />
-            {shown ? 'Replace image' : 'Upload an image'}
-          </Button>
-          {shown && (
-            <Button variant="ghost" size="sm" onClick={() => { setFile(null); setImage(null) }}>
-              <Trash2 className="size-4" aria-hidden />
-              Remove image
-            </Button>
-          )}
-        </div>
+        <p className="text-sm text-muted">
+          {!items.length ? 'No images yet. The page shows Coming soon.' : items.some((it) => it.file) ? 'New images are ready. Save to publish them.' : `Showing ${items.length} uploaded ${items.length === 1 ? 'image' : 'images'}.`}
+        </p>
+        <ul className="space-y-4">
+          {items.map((it, i) => (
+            <li key={it.key} className="space-y-2">
+              <img src={it.preview} alt={`Terms and conditions preview, page ${i + 1}`} className="h-auto w-full max-w-md rounded-2xl ring-1 ring-line" />
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-muted">Page {i + 1}</span>
+                <MoveButtons index={i} count={items.length} label={`page ${i + 1}`} onMove={(to) => setItems((list) => move(list, i, to))} onRemove={() => remove(it.key)} />
+              </div>
+            </li>
+          ))}
+        </ul>
+        <input ref={fileInput} type="file" accept="image/*" multiple className="sr-only" aria-label="Upload terms and conditions images" onChange={(e) => { add(e.target.files); e.target.value = '' }} />
+        <Button variant="secondary" size="sm" onClick={() => fileInput.current?.click()}>
+          <ImagePlus className="size-4" aria-hidden />
+          {items.length ? 'Add more images' : 'Upload images'}
+        </Button>
       </section>
     </EditorFrame>
   )
