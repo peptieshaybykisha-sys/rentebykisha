@@ -318,7 +318,7 @@ const BAGS: BagSpec[] = [
 
 /** A boutique paper bag in three-quarter view, lit from the left and seen from slightly above: a folded top cuff with punched eyelets, the inside back wall
  *  over the rim, tissue paper, a pleated side gusset, a thick base, and twisted-rope or satin handles. With `hold`, both handles gather to that point (a hand). */
-function Bag({ spec, i, hold, held }: { spec: BagSpec; i: number; hold?: [number, number]; held?: boolean }) {
+function Bag({ spec, i, hold, held, back }: { spec: BagSpec; i: number; hold?: [number, number]; held?: boolean; back?: boolean }) {
   const { x, base, w, h, d, color, shade, light, inner, accent, handle, tissue, ribbon, tilt = 0 } = spec
   const t = base - h
   const k = d * 0.32 // how far the far edge rises: we look slightly down into the bag
@@ -356,7 +356,7 @@ function Bag({ spec, i, hold, held }: { spec: BagSpec; i: number; hold?: [number
   const mid = x + w / 2
   const gx = x + w + d / 2
   return (
-    <g transform={`rotate(${tilt} ${x + w / 2} ${base})`}>
+    <g transform={`rotate(${tilt} ${x + w / 2} ${base})${back ? ` translate(${2 * x + w + d} 0) scale(-1 1)` : ''}`}>
       <defs>
         <linearGradient id={`${id(i)}-f`} x1="0" y1="0" x2="1" y2="0.12">
           <stop offset="0" stopColor={light} />
@@ -400,6 +400,8 @@ function Bag({ spec, i, hold, held }: { spec: BagSpec; i: number; hold?: [number
       <path d={`M${x} ${t} H${x + w}`} stroke="#fff" strokeOpacity="0.75" strokeWidth="0.4" />
       <path d={`M${x} ${base} H${x + w} L${x + w + d} ${base - k} V${base - k + 0.7} L${x + w} ${base + 0.7} H${x}Z`} fill={shade} opacity="0.85" />
       {/* gold-foil logo */}
+      {!back && (
+        <g>
       <text x={mid} y={t + h * 0.56} textAnchor="middle" fontSize={w * 0.21} fontStyle="italic" fontFamily="'Cormorant Garamond', Georgia, serif" fill={accent}>
         Renté
       </text>
@@ -407,6 +409,8 @@ function Bag({ spec, i, hold, held }: { spec: BagSpec; i: number; hold?: [number
         BY KISHA
       </text>
       <path d={`M${mid - w * 0.14} ${t + h * 0.34} H${mid + w * 0.14}`} stroke={accent} strokeWidth="0.25" opacity="0.8" />
+        </g>
+      )}
       {/* eyelets, then the front handle through them */}
       {[gl, gr].map((ex) => (
         <g key={ex}>
@@ -419,12 +423,12 @@ function Bag({ spec, i, hold, held }: { spec: BagSpec; i: number; hold?: [number
   )
 }
 
-/** Shopping bags standing on the floor beside the pouf. */
-export function ShoppingBags() {
+/** Shopping bags standing on the floor beside the pouf. With `back`, seen from behind (as in the mirror): flipped, with no logo. */
+export function ShoppingBags({ back }: { back?: boolean }) {
   return (
     <g>
       {BAGS.map((b, i) => (
-        <Bag key={i} spec={b} i={i} />
+        <Bag key={i} spec={b} i={i} back={back} />
       ))}
     </g>
   )

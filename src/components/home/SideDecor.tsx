@@ -2,7 +2,7 @@
  *  an ottoman, side table, a gilded mirror and flowers. Pure inline SVG/CSS, so it needs no image files and scales with the viewport.
  *  Light falls from the doorway outward, so every piece is lit on its door-facing side and throws a soft shadow away from it. */
 
-import { Lady, ShoppingBags } from './Lady'
+import { ShoppingBags } from './Lady'
 import { Mirror } from './Mirror'
 
 const GOLD = 'url(#sd-gold)'
@@ -395,7 +395,7 @@ function FurPouf() {
   for (let a = 0; a <= Math.PI; a += 0.09) pts.push([cx + rx * Math.cos(a), botY + ry * Math.sin(a)])
   for (let y = botY; y >= topY; y -= 1.6) pts.push([cx - rx, y])
   const shaggy = pts.map(([x, y], i) => {
-    const out = 0.3 + 1.5 * g_rnd(i * 3.1)
+    const out = 0.6 + 2.6 * g_rnd(i * 3.1)
     return [x + (x - cx) * (out / rx), y + (y - (topY + botY) / 2) * (out / 14)] as [number, number]
   })
   const outline = `M${shaggy.map((p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' L')}Z`
@@ -410,27 +410,27 @@ function FurPouf() {
     const cxm = (x + ex) / 2 - Math.sin(ang) * bend
     const cym = (y + ey) / 2 + Math.cos(ang) * bend
     const r = g_rnd(seed + 13)
-    strands.push({ d: `M${x.toFixed(1)} ${y.toFixed(1)} Q${cxm.toFixed(1)} ${cym.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`, c: r < 0.3 + shadeBias * 0.2 ? SHADE : r < 0.7 ? MID : LIGHT, o: 0.42 + 0.38 * g_rnd(seed + 29), w: 0.28 + 0.22 * g_rnd(seed + 41) })
+    strands.push({ d: `M${x.toFixed(1)} ${y.toFixed(1)} Q${cxm.toFixed(1)} ${cym.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`, c: r < 0.3 + shadeBias * 0.2 ? SHADE : r < 0.7 ? MID : LIGHT, o: 0.42 + 0.38 * g_rnd(seed + 29), w: 0.22 + 0.24 * g_rnd(seed + 41) })
   }
-  for (let i = 0; i < 620; i++) {
+  for (let i = 0; i < 1500; i++) {
     const r = Math.sqrt(g_rnd(i * 5 + 1))
     const th = g_rnd(i * 5 + 2) * Math.PI * 2
     const x = cx + rx * 0.97 * r * Math.cos(th)
     const y = topY + ry * 0.97 * r * Math.sin(th)
-    strand(x, y, Math.atan2(Math.sin(th) * ry, Math.cos(th) * rx) + (g_rnd(i * 5 + 3) - 0.5) * 0.9, 1.8 + 1.8 * g_rnd(i * 5 + 4), i * 11, r)
+    strand(x, y, Math.atan2(Math.sin(th) * ry, Math.cos(th) * rx) + (g_rnd(i * 5 + 3) - 0.5) * 0.9, 2.2 + 2.8 * g_rnd(i * 5 + 4), i * 11, r)
   }
-  for (let i = 0; i < 1100; i++) {
+  for (let i = 0; i < 2600; i++) {
     const x = cx - rx + 2 * rx * g_rnd(i * 7 + 100)
     const edge = Math.abs(x - cx) / rx
     const frontTop = topY + ry * Math.sqrt(Math.max(0, 1 - ((x - cx) / rx) ** 2))
     const y = frontTop + (botY - frontTop + ry * Math.sqrt(Math.max(0, 1 - ((x - cx) / rx) ** 2))) * g_rnd(i * 7 + 101)
-    strand(x, y, Math.PI / 2 + (g_rnd(i * 7 + 102) - 0.5) * 0.8 + (x - cx) * 0.012, 2 + 2.2 * g_rnd(i * 7 + 103), i * 17 + 3, edge + (y - frontTop) / 14)
+    strand(x, y, Math.PI / 2 + (g_rnd(i * 7 + 102) - 0.5) * 0.8 + (x - cx) * 0.012, 2.6 + 3.4 * g_rnd(i * 7 + 103), i * 17 + 3, edge + (y - frontTop) / 14)
   }
   // a longer fringe where the top meets the side, and round the base
-  for (let i = 0; i < 150; i++) {
-    const a = (i / 149) * Math.PI
-    strand(cx + rx * Math.cos(a), topY + ry * Math.sin(a), Math.PI / 2 + (g_rnd(i * 3) - 0.5) * 0.7 + Math.cos(a) * 0.35, 2.4 + 1.8 * g_rnd(i * 3 + 1), i * 23 + 5, 0.4)
-    strand(cx + rx * Math.cos(a), botY + ry * Math.sin(a), Math.PI / 2 + (g_rnd(i * 3 + 2) - 0.5) * 0.7 + Math.cos(a) * 0.4, 2.2 + 1.8 * g_rnd(i * 3 + 3), i * 29 + 9, 1)
+  for (let i = 0; i < 340; i++) {
+    const a = (i / 339) * Math.PI
+    strand(cx + rx * Math.cos(a), topY + ry * Math.sin(a), Math.PI / 2 + (g_rnd(i * 3) - 0.5) * 0.7 + Math.cos(a) * 0.35, 3.4 + 2.6 * g_rnd(i * 3 + 1), i * 23 + 5, 0.4)
+    strand(cx + rx * Math.cos(a), botY + ry * Math.sin(a), Math.PI / 2 + (g_rnd(i * 3 + 2) - 0.5) * 0.7 + Math.cos(a) * 0.4, 3 + 2.6 * g_rnd(i * 3 + 3), i * 29 + 9, 1)
   }
   return (
     <g>
@@ -467,6 +467,150 @@ function FurPouf() {
   )
 }
 
+/** A burgundy two-piece tossed over the front-left edge of the pouf: a beaded halter crop top lying on the cushion, and the tulle skirt gathered at its beaded
+ *  waistband, spread over the top, then pouring over the rim in soft, overlapping layers and puddling on the floor. Folds are soft blurred shapes rather than lines,
+ *  and the tulle is a lining under two sheer layers with light catching the hems. With `back` (the mirror view) only the part hanging over the left edge shows.
+ *  Scene coordinates, floor at y = 353. */
+function Dress({ back = false }: { back?: boolean }) {
+  // a tapered fold from (x1,y1) down to (x2,y2): pointed at both ends, `w` wide in the middle, bowed sideways by `bend`
+  const fold = (x1: number, y1: number, x2: number, y2: number, w: number, bend = 0) => {
+    const mx = (x1 + x2) / 2 + bend
+    const my = (y1 + y2) / 2
+    return `M${x1} ${y1} Q${(mx - w / 2).toFixed(2)} ${my} ${x2} ${y2} Q${(mx + w / 2).toFixed(2)} ${my} ${x1} ${y1}Z`
+  }
+  const scallops = (x0: number, x1: number, y: number, n: number, depth: number) => {
+    const step = (x1 - x0) / n
+    let d = ''
+    for (let i = 0; i < n; i++) {
+      const a = x0 + i * step
+      d += ` Q${(a + step / 2).toFixed(2)} ${(y + depth * (i % 2 ? 0.6 : 1) + (g_rnd(i * 7 + 2) - 0.5) * 0.8).toFixed(2)} ${(a + step).toFixed(2)} ${(y + (g_rnd(i * 5 + 9) - 0.5) * 0.9).toFixed(2)}`
+    }
+    return d
+  }
+  // lining: from the rim, widening to the floor, with a scalloped hem drawn right to left
+  const lining = `M31 335 C30 341 29.6 346 27 352 C25.6 355 25 357.6 26 359.4${scallops(26, 50, 359.4, 8, 1.8)} C51.4 357.6 50.6 355 49 352 C47.4 347 47 341 45.4 336.6 C40 338 35 337.2 31 335Z`
+  // outer sheer layers: wider and shorter / longer, each with its own hem
+  const sheerA = `M30.4 335.4 C28.6 341.4 27 346.6 23.8 352.8 C22.4 355.8 22.4 358.4 24 359.8${scallops(24, 49.6, 359.8, 9, 1.6)} C51.6 358 50.8 355.4 49.2 352.8 C47.4 348 47.6 342 45.6 337.4 C41 338.2 35 338 30.4 335.4Z`
+  const sheerB = `M31.6 336 C31 342 32.6 347 30.6 353 C29.8 355.6 30.6 357.6 32.4 358.4${scallops(32.4, 52, 358.4, 8, 1.5)} C53.2 356.4 52 353.4 50.4 350.4 C48.8 346 49 341 46.4 337.4 C41.6 338.4 36 338 31.6 336Z`
+  const top = 'M30.6 334.8 C34.4 330.6 39 327.8 45 326.4 C49.4 325.6 54.6 326.2 58 329 C59.6 330.6 58.4 333.4 55 335.6 C50 338.4 36 338.6 30.6 334.8Z'
+  const crop =
+    'M54.4 327.6 C53.8 326.2 54.2 325.4 55.2 325 C56.6 324.6 57 324 57.2 323 C57.4 320.6 58.6 318.8 60.2 318.8 C61.8 318.8 63 320.6 63.2 323 C63.4 324 64 324.6 65.2 325 C66.2 325.4 66.4 326.4 66 327.6 C63.4 329 57.6 329 54.4 327.6Z M58.6 323.2 C58.8 321.6 59.4 320.6 60.2 320.6 C61 320.6 61.6 321.6 61.8 323.2 C60.8 323.6 59.6 323.6 58.6 323.2Z'
+  // deterministic sparkle scatter inside a box
+  const sparkles = (x0: number, y0: number, w: number, h: number, n: number, r: number) =>
+    Array.from({ length: n }, (_, i) => {
+      const fx = Math.abs((Math.sin(i * 12.9898 + 1.3) * 43758.5453) % 1)
+      const fy = Math.abs((Math.sin(i * 78.233 + 4.1) * 24634.6345) % 1)
+      return <circle key={i} cx={x0 + fx * w} cy={y0 + fy * h} r={r * (0.6 + fx * fy * 1.6)} fill={i % 3 ? '#ffe3ea' : '#fff'} opacity={0.5 + fy * 0.5} />
+    })
+  const darkFolds: [number, number, number, number, number, number][] = [
+    [33.4, 336.6, 30.4, 358.2, 2.4, -0.6],
+    [37.6, 337.6, 36.6, 359.6, 2.8, 0.8],
+    [41.8, 338, 43.6, 360, 2.6, -0.8],
+    [45.6, 337.8, 46.8, 358.6, 2.2, 0.4],
+  ]
+  const lightFolds: [number, number, number, number, number, number][] = [
+    [35.4, 337, 33.2, 357.4, 1.8, 0.4],
+    [39.6, 338, 40, 359, 2, -0.6],
+    [44, 338, 45.4, 358, 1.6, 0.6],
+    [29.4, 342, 26.4, 357, 1.4, 0.2],
+  ]
+  return (
+    <g>
+      <defs>
+        <linearGradient id="dr-silk" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#a8335a" />
+          <stop offset="0.3" stopColor="#d4637f" />
+          <stop offset="0.6" stopColor="#8a2547" />
+          <stop offset="1" stopColor="#4a1026" />
+        </linearGradient>
+        <linearGradient id="dr-fall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2f0a19" stopOpacity="0" />
+          <stop offset="1" stopColor="#2f0a19" stopOpacity="0.34" />
+        </linearGradient>
+        <linearGradient id="dr-tulle" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#cf4f78" />
+          <stop offset="0.45" stopColor="#a02f57" />
+          <stop offset="1" stopColor="#6e1a37" />
+        </linearGradient>
+        <filter id="dr-soft" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="0.55" />
+        </filter>
+        <clipPath id="dr-left">
+          <rect x="10" y="300" width="24" height="70" />
+        </clipPath>
+        <clipPath id="dr-crop">
+          <path d={crop} clipRule="evenodd" />
+        </clipPath>
+        <clipPath id="dr-skirt">
+          <path d={sheerA} />
+        </clipPath>
+      </defs>
+      <ellipse cx="38" cy="361" rx="18" ry="2.6" fill="#3a0f1c" opacity="0.3" />
+      <g clipPath={back ? 'url(#dr-left)' : undefined}>
+        {/* lining first, then soft folds, then two sheer layers over it */}
+        <path d={lining} fill="url(#dr-silk)" />
+        <path d={lining} fill="url(#dr-fall)" />
+        <g filter="url(#dr-soft)">
+          {darkFolds.map(([x1, y1, x2, y2, w, b], i) => (
+            <path key={i} d={fold(x1, y1, x2, y2, w, b)} fill="#2f0a19" opacity="0.5" />
+          ))}
+        </g>
+        <path d={sheerB} fill="url(#dr-tulle)" opacity="0.5" />
+        <path d={sheerA} fill="url(#dr-tulle)" opacity="0.5" />
+        <g clipPath="url(#dr-skirt)">
+          <g filter="url(#dr-soft)">
+            {lightFolds.map(([x1, y1, x2, y2, w, b], i) => (
+              <path key={i} d={fold(x1, y1, x2, y2, w, b)} fill="#ffc4d4" opacity="0.5" />
+            ))}
+          </g>
+          {sparkles(23, 337, 30, 24, 30, 0.26)}
+        </g>
+        {/* light catching the tulle hems */}
+        <path d={`M24 359.8${scallops(24, 49.6, 359.8, 9, 1.6)}`} fill="none" stroke="#ffd6e0" strokeOpacity="0.6" strokeWidth="0.45" strokeLinecap="round" />
+        <path d={`M32.4 358.4${scallops(32.4, 52, 358.4, 8, 1.5)}`} fill="none" stroke="#ffd6e0" strokeOpacity="0.35" strokeWidth="0.35" strokeLinecap="round" />
+        {/* the skirt gathered across the cushion up to its beaded waistband */}
+        <path d={top} fill="url(#dr-silk)" />
+        <path d={top} fill="url(#dr-tulle)" opacity="0.5" />
+        <g filter="url(#dr-soft)">
+          <path d={fold(46, 327.4, 33, 335, 2.4, -1)} fill="#2f0a19" opacity="0.45" />
+          <path d={fold(47.4, 327.8, 42, 337, 2.4, 0.6)} fill="#2f0a19" opacity="0.45" />
+          <path d={fold(49.2, 327.6, 53, 336, 2.2, 0.8)} fill="#2f0a19" opacity="0.4" />
+          <path d={fold(45.6, 327, 37.4, 334.4, 1.8, 0.3)} fill="#ffc4d4" opacity="0.5" />
+          <path d={fold(48.4, 327, 46, 336.6, 1.6, -0.4)} fill="#ffc4d4" opacity="0.4" />
+          <path d={fold(50.6, 327, 56, 333.6, 1.5, 0.4)} fill="#ffc4d4" opacity="0.35" />
+        </g>
+        <path d="M44.4 328.4 C46.4 325.2 51.4 325.2 53.6 328.4" fill="none" stroke="#6e1a37" strokeWidth="2.4" strokeLinecap="round" />
+        <path d="M44.4 328.4 C46.4 325.2 51.4 325.2 53.6 328.4" fill="none" stroke="#ffd6e0" strokeWidth="0.7" strokeDasharray="0.5 0.45" strokeLinecap="round" />
+      </g>
+      {/* the bodice continues from the waistband: a strip of midriff, then the beaded halter top, laid flat on the fur along the same line as the skirt */}
+      <ellipse cx="60.4" cy="329.8" rx="9" ry="2" fill="#7a3e4c" opacity="0.26" />
+      <g transform="translate(53.4 327.6) scale(1 0.6) rotate(64) scale(1.12) translate(-60.2 -333.5)">
+        <path d="M54.6 327.6 C58 329 63.4 329 66 327.6 L65.4 333.6 C62.4 334.6 58.2 334.6 55.2 333.6Z" fill="url(#dr-silk)" />
+        <path d="M55.4 331 C58.4 332 62.6 332 65.6 331" stroke="#2f0a19" strokeOpacity="0.3" strokeWidth="0.5" fill="none" />
+        <path d={crop} fillRule="evenodd" fill="url(#dr-silk)" />
+        <g clipPath="url(#dr-crop)">{sparkles(54, 318.8, 12.4, 10, 44, 0.3)}</g>
+        <path d={crop} fillRule="evenodd" fill="none" stroke="#ffd6e0" strokeOpacity="0.8" strokeWidth="0.4" strokeDasharray="0.4 0.4" />
+        <path d="M54.8 327.8 C58 329 63.4 329 66 327.8" stroke="#2f0a19" strokeOpacity="0.35" strokeWidth="0.5" fill="none" strokeLinecap="round" />
+      </g>
+      {/* the beaded waistband joining skirt and bodice, over both */}
+      <path d="M44.4 328.4 C46.4 325.2 51.4 325.2 53.6 328.4" fill="none" stroke="#6e1a37" strokeWidth="2.4" strokeLinecap="round" />
+        <path d="M44.4 328.4 C46.4 325.2 51.4 325.2 53.6 328.4" fill="none" stroke="#ffd6e0" strokeWidth="0.7" strokeDasharray="0.5 0.45" strokeLinecap="round" />
+    </g>
+  )
+}
+
+/** The fur pouf with the burgundy dress draped over it, in scene coordinates. */
+function PoufWithDress({ back = false }: { back?: boolean }) {
+  return (
+    <g>
+      <g transform="translate(1 189)">
+        <FurPouf />
+      </g>
+      <Dress back={back} />
+    </g>
+  )
+}
+
 /** Right of the doorway: a round faux-fur pouf. */
 export function RightSuite({ className }: { className?: string }) {
   return (
@@ -474,13 +618,17 @@ export function RightSuite({ className }: { className?: string }) {
       <svg viewBox="6 140 120 222" preserveAspectRatio="xMidYMax meet" className="absolute inset-0 size-full overflow-visible" fill="none" style={{ filter: SHADOW }}>
         <Defs />
         <ellipse cx="52" cy="352" rx="38" ry="5" fill="url(#sd-contact)" />
-        {/* a gilded standing mirror behind her, with her reflection */}
-        <Mirror />
-        <g transform="translate(1 189)">
-          <FurPouf />
-        </g>
-        {/* the lady stands on the pouf as her plinth; her feet sit on its top at y = 332 */}
-        <Lady transform="translate(52 332) scale(0.82)" />
+        {/* a gilded standing mirror */}
+        <Mirror
+          reflection={
+            // the pouf and bags again, smaller and fainter, as if seen in the glass behind them
+            <g opacity="0.6" transform="translate(60 326) scale(0.5) translate(-51 -353)">
+              <PoufWithDress back />
+              <ShoppingBags back />
+            </g>
+          }
+        />
+        <PoufWithDress />
         <ShoppingBags />
       </svg>
     </div>

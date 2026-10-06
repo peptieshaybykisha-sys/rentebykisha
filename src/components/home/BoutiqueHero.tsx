@@ -98,10 +98,10 @@ export default function BoutiqueHero() {
 
           {/* wall mouldings, floor and the plaster architrave */}
           <motion.div style={{ opacity: introOpacity }} className="hidden md:block">
-            <WallPoster title="Timeless Elegance" caption="From intimate gatherings to life's grandest moments." className="-left-[calc(11rem+9rem)] bottom-0 top-[10%] w-[11rem]" />
-            <WallPoster title="Curated Collections" caption="Designer-inspired dresses for every occasion." tone="wine" className="left-[calc(100%+9rem)] bottom-0 top-[10%] w-[11rem]" />
-            <LeftSuite className="absolute -bottom-[0.8rem] -left-[32.2rem] z-[1] hidden aspect-[114/198] w-[11rem] xl:block" />
-            <RightSuite className="absolute -bottom-[0.8rem] left-[calc(100%+19rem)] z-[1] hidden aspect-[120/222] w-[14.6rem] xl:block" />
+            <WallPoster title="Timeless Elegance" caption="From intimate gatherings to life's grandest moments." className="dr-reflect z-[1] -left-[calc(11rem+9rem)] bottom-0 top-[10%] w-[11rem]" />
+            <WallPoster title="Curated Collections" caption="Designer-inspired dresses for every occasion." tone="wine" className="dr-reflect z-[1] left-[calc(100%+9rem)] bottom-0 top-[10%] w-[11rem]" />
+            <LeftSuite className="dr-reflect absolute -bottom-[0.8rem] -left-[32.2rem] z-[1] hidden aspect-[114/198] w-[11rem] xl:block" />
+            <RightSuite className="dr-reflect absolute -bottom-[0.8rem] left-[calc(100%+19rem)] z-[1] hidden aspect-[120/222] w-[14.6rem] xl:block" />
           </motion.div>
           <div aria-hidden className="dr-floor" />
           <DoorFrame />
@@ -110,7 +110,7 @@ export default function BoutiqueHero() {
           <div
             ref={archRef}
             onClick={opened ? undefined : openDoors}
-            className="relative flex h-[min(52svh,36rem)] w-[min(88vw,26rem)] cursor-pointer flex-col overflow-hidden rounded-t-[999px] bg-[#f3dcc0] shadow-[inset_0_0_14px_rgba(70,20,34,0.45)] md:aspect-[5/8] md:h-[min(60svh,40rem)] md:w-auto"
+            className="dr-reflect relative flex h-[min(52svh,36rem)] w-[min(88vw,26rem)] cursor-pointer flex-col overflow-hidden rounded-t-[999px] bg-[#f3dcc0] shadow-[inset_0_0_14px_rgba(70,20,34,0.45)] md:aspect-[5/8] md:h-[min(60svh,40rem)] md:w-auto"
           >
             <Showroom />
             <motion.div aria-hidden className="absolute inset-0 bg-[#2b120e]" style={{ opacity: dim }} />

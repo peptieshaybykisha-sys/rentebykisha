@@ -1,7 +1,6 @@
-import { Lady } from './Lady'
+import type { ReactNode } from 'react'
 
-/** A gilded arched cheval mirror standing behind the lady, in the same inline-SVG style as the rest of the boutique. It sits slightly to her right,
- *  so her reflection (her back, as a real mirror behind her would show) is visible beside her. Uses the brass gradients defined in SideDecor's <Defs />. */
+/** A gilded arched cheval mirror in the same inline-SVG style as the rest of the boutique. Uses the brass gradients defined in SideDecor's <Defs />. */
 
 const MX = 68 // centre line of the mirror
 const W = 68 // outer width of the frame
@@ -35,7 +34,8 @@ function Post({ x, side }: { x: number; side: -1 | 1 }) {
   )
 }
 
-export function Mirror() {
+
+export function Mirror({ reflection }: { reflection?: ReactNode }) {
   const studs = Array.from({ length: 9 }, (_, i) => {
     const a = Math.PI + (Math.PI * (i + 0.5)) / 9
     return [MX + (R - FRAME / 2 - 0.2) * Math.cos(a), ARCH_Y + (R - FRAME / 2 - 0.2) * Math.sin(a)] as [number, number]
@@ -67,13 +67,12 @@ export function Mirror() {
       <Post x={MX - R - 6} side={-1} />
       <Post x={MX + R + 6} side={1} />
 
-      {/* the glass, and her reflection in it: seen from behind, a little smaller and farther back */}
+      {/* the glass */}
       <path d={glass} fill="url(#mirror-pane)" />
       <g clipPath="url(#mirror-glass)">
         <ellipse cx={MX + 4} cy="332" rx="26" ry="6" fill="#efc9d3" opacity="0.7" />
-        <g opacity="0.82">
-          <Lady back transform="translate(70.5 327) scale(0.7)" />
-        </g>
+        {/* whatever stands in front of the glass, passed in by the scene */}
+        {reflection}
         <rect x={MX - R} y={TOP} width={W} height={BOTTOM - TOP} fill="url(#mirror-fade)" />
         {/* glare */}
         <path d={`M${MX - 22} ${TOP} L${MX - 8} ${TOP} L${MX - 40} ${BOTTOM} L${MX - 54} ${BOTTOM}Z`} fill="url(#mirror-glare)" opacity="0.6" />
